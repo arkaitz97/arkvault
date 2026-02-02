@@ -1,0 +1,24 @@
+services:
+  backup-app:
+    build: .
+    container_name: arkvault
+    ports:
+      - "3001:3001"
+    volumes:
+      # Persist database
+      - backup-data:/app/data
+      # Mount local backup directories (customize as needed)
+      - ./backups:/backups
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_PATH=/app/data/backup.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  backup-data:

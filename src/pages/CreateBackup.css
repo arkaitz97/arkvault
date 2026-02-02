@@ -1,0 +1,431 @@
+.create-backup {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+
+.steps-progress {
+    display: flex;
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+}
+
+.step {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.step-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    z-index: 2;
+    transition: all var(--transition-normal);
+}
+
+.step.active .step-indicator {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.step.completed .step-indicator {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: var(--spacing-sm);
+}
+
+.step-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.step.active .step-title {
+    color: var(--text-primary);
+}
+
+.step-description {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.step-connector {
+    flex: 1;
+    height: 2px;
+    background: var(--border-color);
+    margin: 0 var(--spacing-md);
+}
+
+.step.completed+.step .step-connector,
+.step.completed .step-connector {
+    background: var(--success);
+}
+
+
+.step-container {
+    padding: var(--spacing-xl);
+}
+
+.step-content {
+    min-height: 400px;
+    margin-bottom: var(--spacing-xl);
+}
+
+.step-content h2 {
+    margin-bottom: var(--spacing-xs);
+}
+
+.step-content>p {
+    margin-bottom: var(--spacing-xl);
+}
+
+
+.connector-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.connector-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    text-align: center;
+}
+
+.connector-type-card:hover {
+    border-color: var(--border-color-hover);
+    transform: translateY(-2px);
+}
+
+.connector-type-card.selected {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.type-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.type-description {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+
+.connector-config {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+}
+
+.connector-config h3 {
+    margin-bottom: var(--spacing-lg);
+}
+
+.existing-connectors {
+    margin-bottom: var(--spacing-lg);
+}
+
+.existing-connectors>label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.existing-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.existing-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.existing-item:hover {
+    border-color: var(--border-color-hover);
+}
+
+.existing-item.selected {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: var(--spacing-lg) 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider span {
+    padding: 0 var(--spacing-md);
+}
+
+.config-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.input-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+.required {
+    color: var(--error);
+}
+
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.schedule-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    color: var(--text-muted);
+}
+
+.schedule-card:hover {
+    border-color: var(--border-color-hover);
+    color: var(--text-secondary);
+}
+
+.schedule-card.selected {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+}
+
+.schedule-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.schedule-description {
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.custom-cron {
+    margin-top: var(--spacing-xl);
+}
+
+
+.options-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    max-width: 500px;
+}
+
+.toggle-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toggle-option:hover {
+    background: var(--bg-elevated);
+}
+
+.toggle-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: var(--text-muted);
+}
+
+.toggle-info>div {
+    display: flex;
+    flex-direction: column;
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.toggle-description {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.toggle-option input {
+    display: none;
+}
+
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-full);
+    position: relative;
+    transition: background var(--transition-fast);
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.toggle-option input:checked+.toggle-switch {
+    background: var(--accent-primary);
+}
+
+.toggle-option input:checked+.toggle-switch::after {
+    transform: translateX(20px);
+    background: white;
+}
+
+
+.review-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.review-section {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.review-section h4 {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.review-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) 0;
+}
+
+.review-label {
+    color: var(--text-secondary);
+    min-width: 120px;
+}
+
+.review-value {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+
+.step-navigation {
+    display: flex;
+    justify-content: space-between;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.step-navigation .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+@media (max-width: 768px) {
+    .steps-progress {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .step-connector {
+        display: none;
+    }
+
+    .step:not(.active):not(.completed) {
+        display: none;
+    }
+
+    .connector-type-grid,
+    .schedule-grid {
+        grid-template-columns: 1fr;
+    }
+}
