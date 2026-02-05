@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import Database from 'better-sqlite3';
@@ -9,56 +9,49 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Create test database and app
 let db;
 let app;
 const testDbPath = join(__dirname, 'test-settings.db');
 
 beforeAll(async () => {
-    // Clean up any existing test database
     if (fs.existsSync(testDbPath)) {
         fs.unlinkSync(testDbPath);
     }
 
-    // Create test database
     db = new Database(testDbPath);
 
-    // Create settings table
     db.exec(`
-        CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        )
-    `);
-
-    // Create other tables needed for stats
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS backup_history (
-            id TEXT PRIMARY KEY,
-            size INTEGER DEFAULT 0,
-            status TEXT DEFAULT 'completed',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+        CREATE TABLE IF NOT EXISTS settings(
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+)
     `);
 
     db.exec(`
-        CREATE TABLE IF NOT EXISTS backup_jobs (
-            id TEXT PRIMARY KEY,
-            is_active INTEGER DEFAULT 1
-        )
+        CREATE TABLE IF NOT EXISTS backup_history(
+        id TEXT PRIMARY KEY,
+        size INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'completed',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
     `);
 
     db.exec(`
-        CREATE TABLE IF NOT EXISTS connectors (
-            id TEXT PRIMARY KEY
-        )
+        CREATE TABLE IF NOT EXISTS backup_jobs(
+        id TEXT PRIMARY KEY,
+        is_active INTEGER DEFAULT 1
+    )
     `);
 
-    // Create Express app with settings routes inline
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS connectors(
+        id TEXT PRIMARY KEY
+    )
+    `);
+
     app = express();
     app.use(express.json());
 
-    // Default settings
     const defaults = {
         defaultRetention: '30',
         defaultCompression: 'true',
@@ -67,7 +60,6 @@ beforeAll(async () => {
         notificationEmail: ''
     };
 
-    // Insert defaults
     Object.entries(defaults).forEach(([key, value]) => {
         const existing = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
         if (!existing) {
@@ -75,7 +67,6 @@ beforeAll(async () => {
         }
     });
 
-    // GET settings
     app.get('/api/settings', (req, res) => {
         const rows = db.prepare('SELECT key, value FROM settings').all();
         const settings = {};
@@ -88,7 +79,6 @@ beforeAll(async () => {
         res.json(settings);
     });
 
-    // PUT settings
     app.put('/api/settings', (req, res) => {
         const updates = req.body;
         const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
@@ -98,7 +88,6 @@ beforeAll(async () => {
         res.json({ success: true });
     });
 
-    // GET stats
     app.get('/api/settings/stats', (req, res) => {
         const totalBackups = db.prepare('SELECT COUNT(*) as count FROM backup_history').get().count;
         const totalSize = db.prepare('SELECT COALESCE(SUM(size), 0) as total FROM backup_history').get().total;
@@ -107,7 +96,6 @@ beforeAll(async () => {
         res.json({ totalBackups, totalSize, activeJobs, connectors });
     });
 
-    // POST cleanup
     app.post('/api/settings/cleanup', (req, res) => {
         const retentionRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('defaultRetention');
         const retentionDays = parseInt(retentionRow?.value) || 30;
@@ -117,7 +105,7 @@ beforeAll(async () => {
         const result = db.prepare(`
             DELETE FROM backup_history 
             WHERE created_at < ? AND status = 'completed'
-        `).run(cutoffDate.toISOString());
+    `).run(cutoffDate.toISOString());
 
         res.json({ success: true, deleted: result.changes });
     });
@@ -147,7 +135,6 @@ describe('Settings API', () => {
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
 
-        // Verify update
         const verify = await request(app).get('/api/settings');
         expect(verify.body.defaultRetention).toBe(60);
         expect(verify.body.defaultEncryption).toBe(true);

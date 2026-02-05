@@ -12,8 +12,8 @@ export default defineConfig({
     // Retry on CI only
     retries: process.env.CI ? 2 : 0,
 
-    // Opt out of parallel tests on CI
-    workers: process.env.CI ? 1 : undefined,
+    // Opt out of parallel tests to avoid database contention
+    workers: 1,
 
     // Reporter to use
     reporter: 'html',
@@ -27,14 +27,31 @@ export default defineConfig({
         trace: 'on-first-retry',
 
         // Take screenshot on failure
-        screenshot: 'only-on-failure'
+        screenshot: 'only-on-failure',
     },
 
     // Configure projects for major browsers
     projects: [
         {
+            name: 'setup',
+            testMatch: /.*\.setup\.js/,
+        },
+        {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'] }
+            testIgnore: /.*auth\.spec\.js/, // Exclude auth tests that reset DB
+            use: {
+                ...devices['Desktop Chrome'],
+                storageState: 'tests/e2e/playwright/.auth/user.json',
+            },
+            dependencies: ['setup'],
+        },
+        {
+            name: 'auth-flow',
+            testMatch: /.*auth\.spec\.js/, // Run auth tests separately
+            use: {
+                ...devices['Desktop Chrome'],
+                storageState: { cookies: [], origins: [] }, // Start fresh
+            },
         }
     ],
 

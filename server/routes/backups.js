@@ -246,14 +246,6 @@ router.delete('/available/:id', async (req, res) => {
 
         const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(backup.job_id);
         if (job) {
-            let destConfig;
-            if (job.destination_connector_id) {
-                const connector = db.prepare('SELECT * FROM connectors WHERE id = ?').get(job.destination_connector_id);
-                if (connector) destConfig = JSON.parse(connector.config);
-            } else if (job.destination_config) {
-                destConfig = JSON.parse(job.destination_config);
-            }
-
             if (job.destination_type === 'local' && backup.location) {
                 const fs = await import('fs/promises');
                 try {

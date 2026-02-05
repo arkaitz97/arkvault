@@ -30,7 +30,7 @@ test.describe('History Page', () => {
     });
 
     test('should display history page', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: /Backup History/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Backup History/i, level: 1 })).toBeVisible();
     });
 
     test('should show stats bar', async ({ page }) => {

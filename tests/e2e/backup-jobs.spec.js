@@ -6,7 +6,7 @@ test.describe('Backup Jobs Page', () => {
     });
 
     test('should display backup jobs page', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: /Backup Jobs/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Backup Jobs/i, level: 1 })).toBeVisible();
     });
 
     test('should show new backup job button', async ({ page }) => {
