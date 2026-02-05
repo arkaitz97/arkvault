@@ -96,7 +96,6 @@ export default function Dashboard() {
                 <p>Overview of your backup operations</p>
             </header>
 
-            {/* Stats Grid */}
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon active">
@@ -140,7 +139,6 @@ export default function Dashboard() {
             </div>
 
             <div className="dashboard-grid">
-                {/* Recent Backups */}
                 <section className="dashboard-section">
                     <div className="section-header">
                         <h2>Recent Backups</h2>
@@ -181,7 +179,6 @@ export default function Dashboard() {
                     </div>
                 </section>
 
-                {/* Upcoming Backups */}
                 <section className="dashboard-section">
                     <div className="section-header">
                         <h2>Upcoming Backups</h2>
@@ -216,7 +213,6 @@ export default function Dashboard() {
                     </div>
                 </section>
 
-                {/* Connected Sources */}
                 <section className="dashboard-section full-width">
                     <div className="section-header">
                         <h2>Connected Sources</h2>
@@ -258,7 +254,6 @@ export default function Dashboard() {
                 </section>
             </div>
 
-            {/* Quick Actions */}
             <section className="quick-actions">
                 <Link to="/create" className="btn btn-primary btn-lg">
                     <PlusCircle size={20} />

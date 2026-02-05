@@ -49,7 +49,7 @@ npm run start
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3001` | Backend server port |
-| `DATABASE_PATH` | `./data/backup.db` | SQLite database location |
+| `DATABASE_PATH` | `./server/arkvault.db` | SQLite database location |
 
 ### Connector Types
 

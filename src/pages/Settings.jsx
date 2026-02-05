@@ -28,10 +28,6 @@ export default function Settings() {
     const [cleaning, setCleaning] = useState(false);
     const [message, setMessage] = useState(null);
 
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
     const loadSettings = async () => {
         try {
             setLoading(true);
@@ -41,12 +37,17 @@ export default function Settings() {
             ]);
             setSettings(settingsData);
             setStats(statsData);
-        } catch (err) {
+        } catch {
             showMessage('error', 'Failed to load settings');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadSettings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const showMessage = (type, text) => {
         setMessage({ type, text });
@@ -58,7 +59,7 @@ export default function Settings() {
             setSaving(true);
             await settingsAPI.update(settings);
             showMessage('success', 'Settings saved successfully');
-        } catch (err) {
+        } catch {
             showMessage('error', 'Failed to save settings');
         } finally {
             setSaving(false);
@@ -75,7 +76,7 @@ export default function Settings() {
             showMessage('success', `Cleanup complete: ${result.deleted} backups removed`);
             const statsData = await settingsAPI.getStats();
             setStats(statsData);
-        } catch (err) {
+        } catch {
             showMessage('error', 'Cleanup failed');
         } finally {
             setCleaning(false);
