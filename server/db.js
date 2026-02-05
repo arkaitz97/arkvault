@@ -5,12 +5,12 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const db = new Database(join(__dirname, 'backup.db'));
+const dbPath = process.env.DATABASE_PATH || join(__dirname, 'arkvault.db');
+const db = new Database(dbPath);
 
 db.pragma('foreign_keys = ON');
 
 db.exec(`
-  -- Connectors table
   CREATE TABLE IF NOT EXISTS connectors (
     id TEXT PRIMARY KEY,
     type TEXT NOT NULL,
@@ -22,7 +22,6 @@ db.exec(`
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- Backup jobs table
   CREATE TABLE IF NOT EXISTS jobs (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -45,7 +44,6 @@ db.exec(`
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- Backup history table
   CREATE TABLE IF NOT EXISTS backup_history (
     id TEXT PRIMARY KEY,
     job_id TEXT NOT NULL,
@@ -62,7 +60,6 @@ db.exec(`
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
   );
 
-  -- Available backups (for restore)
   CREATE TABLE IF NOT EXISTS available_backups (
     id TEXT PRIMARY KEY,
     job_id TEXT NOT NULL,
@@ -76,6 +73,16 @@ db.exec(`
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS auth_settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    password_hash TEXT NOT NULL,
+    must_change_password INTEGER DEFAULT 1,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  INSERT OR IGNORE INTO auth_settings (id, password_hash, must_change_password)
+  VALUES (1, '$2b$10$w1QUlPvwXKkY4.Ax2oH1N.z1UzlH2npyT75zSJAL9txWqz.auUWv.', 1);
 `);
 
 export default db;
