@@ -1,4 +1,3 @@
-// Mock data for the backup application
 
 export const connectorTypes = {
     local: {
@@ -169,7 +168,7 @@ export const mockBackupHistory = [
         startTime: new Date('2026-02-02T02:00:00'),
         endTime: new Date('2026-02-02T02:15:32'),
         status: 'success',
-        size: 1024 * 1024 * 256, // 256 MB
+        size: 1024 * 1024 * 256,
         filesProcessed: 1542,
         destination: 'S3: myapp-backups/prod/'
     },
@@ -267,7 +266,6 @@ export const mockAvailableBackups = [
     }
 ];
 
-// Helper function to format bytes
 export function formatBytes(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -276,7 +274,6 @@ export function formatBytes(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Helper to format duration
 export function formatDuration(start, end) {
     const ms = end - start;
     const seconds = Math.floor(ms / 1000);

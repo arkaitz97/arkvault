@@ -1,5 +1,5 @@
 services:
-  backup-app:
+  arkvault:
     build: .
     container_name: arkvault
     ports:
@@ -12,8 +12,30 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - DATABASE_PATH=/app/data/backup.db
+      - DATABASE_PATH=/app/data/arkvault.db
     restart: unless-stopped
+
+    # Resource Limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+
+    # Log Rotation
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Security
+    security_opt:
+      - no-new-privileges:true
+
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
       interval: 30s

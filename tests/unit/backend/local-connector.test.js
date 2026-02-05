@@ -28,7 +28,7 @@ describe('LocalConnector', () => {
         try {
             await fs.rm(testDir, { recursive: true, force: true });
             await fs.rm(testBackupDir, { recursive: true, force: true });
-        } catch (e) {
+        } catch {
             // Ignore cleanup errors
         }
     });

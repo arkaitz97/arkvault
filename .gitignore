@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test reports and results
+playwright-report/
+test-results/
+test_results.txt
+coverage/
+tests/e2e/playwright/
+backups/
+
+# Databases
+*.db
+
+# Environment variables
+.env
+.env.*

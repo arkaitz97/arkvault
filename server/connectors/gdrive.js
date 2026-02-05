@@ -18,7 +18,6 @@ class GDriveConnector {
             try {
                 credentials = JSON.parse(config.serviceAccountKey);
             } catch {
-                // If it's a file path
                 credentials = JSON.parse(fs.readFileSync(config.serviceAccountKey, 'utf8'));
             }
         } else {
@@ -38,11 +37,9 @@ class GDriveConnector {
             const auth = this.getAuth(config);
             const drive = google.drive({ version: 'v3', auth });
 
-            // Try to access the folder
             if (config.folderId) {
                 await drive.files.get({ fileId: config.folderId });
             } else {
-                // List root to verify access
                 await drive.files.list({ pageSize: 1 });
             }
 
@@ -63,7 +60,6 @@ class GDriveConnector {
 
         await mkdir(tempDir, { recursive: true });
 
-        // Download all files from folder
         let fileCount = 0;
         let pageToken = undefined;
         const folderId = config.folderId || 'root';
@@ -79,11 +75,9 @@ class GDriveConnector {
 
             for (const file of response.data.files || []) {
                 if (file.mimeType === 'application/vnd.google-apps.folder') {
-                    // Skip folders for now (could implement recursive download)
                     continue;
                 }
 
-                // Download file
                 const destPath = path.join(tempDir, file.name);
                 const dest = createWriteStream(destPath);
 
@@ -99,7 +93,6 @@ class GDriveConnector {
             pageToken = response.data.nextPageToken;
         } while (pageToken);
 
-        // Create zip archive
         await new Promise((resolve, reject) => {
             const output = createWriteStream(tempPath);
             const archive = archiver('zip', {
@@ -114,7 +107,6 @@ class GDriveConnector {
             archive.finalize();
         });
 
-        // Cleanup temp dir
         await rm(tempDir, { recursive: true, force: true });
 
         const archiveStats = await stat(tempPath);
@@ -137,7 +129,6 @@ class GDriveConnector {
             parents: config.folderId ? [config.folderId] : []
         };
 
-        const fileStats = await stat(sourcePath);
         const media = {
             mimeType: 'application/zip',
             body: createReadStream(sourcePath)
@@ -149,7 +140,6 @@ class GDriveConnector {
             fields: 'id, webViewLink'
         });
 
-        // Clean up temp file
         await rm(sourcePath, { force: true });
 
         return {
@@ -163,7 +153,6 @@ class GDriveConnector {
         const auth = this.getAuth(config);
         const drive = google.drive({ version: 'v3', auth });
 
-        // Parse location: gdrive://fileId
         const match = location.match(/^gdrive:\/\/(.+)$/);
         if (!match) {
             throw new Error('Invalid Google Drive location format');
@@ -171,11 +160,9 @@ class GDriveConnector {
 
         const fileId = match[1];
 
-        // Get file metadata for filename
         const fileMeta = await drive.files.get({ fileId, fields: 'name' });
         const tempPath = path.join('/tmp', fileMeta.data.name);
 
-        // Download file
         const dest = createWriteStream(tempPath);
         const response = await drive.files.get(
             { fileId, alt: 'media' },

@@ -1,7 +1,4 @@
-// API test setup
 import { beforeAll, afterAll, beforeEach } from 'vitest';
-import express from 'express';
-import cors from 'cors';
 import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -10,7 +7,6 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Create a test database
 const TEST_DB_PATH = join(__dirname, '../test.db');
 
 export let testDb;
@@ -18,16 +14,13 @@ export let testApp;
 export let testServer;
 
 beforeAll(async () => {
-    // Remove existing test database
     if (fs.existsSync(TEST_DB_PATH)) {
         fs.unlinkSync(TEST_DB_PATH);
     }
 
-    // Create fresh test database
     testDb = new Database(TEST_DB_PATH);
     testDb.pragma('foreign_keys = ON');
 
-    // Create tables
     testDb.exec(`
         CREATE TABLE IF NOT EXISTS connectors (
             id TEXT PRIMARY KEY,
@@ -88,12 +81,10 @@ beforeAll(async () => {
         );
     `);
 
-    // Set global test database reference
     global.__testDb = testDb;
 });
 
 beforeEach(() => {
-    // Clear all tables before each test
     testDb.exec('DELETE FROM backup_history');
     testDb.exec('DELETE FROM available_backups');
     testDb.exec('DELETE FROM jobs');

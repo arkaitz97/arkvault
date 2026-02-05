@@ -4,14 +4,11 @@ import fs from 'fs';
 import path from 'path';
 
 const execAsync = promisify(exec);
-const stat = promisify(fs.stat);
-const exists = promisify(fs.exists);
 const mkdir = promisify(fs.mkdir);
 const rm = promisify(fs.rm);
 
 class NFSConnector {
     getMountPoint(config) {
-        // Create a unique mount point for this NFS share
         const hash = Buffer.from(`${config.host}:${config.path}`).toString('base64').replace(/[/+=]/g, '').slice(0, 12);
         return `/tmp/nfs-mount-${hash}`;
     }
@@ -19,20 +16,17 @@ class NFSConnector {
     async mount(config) {
         const mountPoint = this.getMountPoint(config);
 
-        // Check if already mounted
         try {
             const { stdout } = await execAsync(`mount | grep "${mountPoint}"`);
             if (stdout.trim()) {
-                return mountPoint; // Already mounted
+                return mountPoint;
             }
         } catch {
-            // Not mounted, continue
+            // mount check failed, assume not mounted
         }
 
-        // Create mount point
         await mkdir(mountPoint, { recursive: true });
 
-        // Build mount command
         const source = `${config.host}:${config.path}`;
         const options = config.mountOptions || 'rw,soft,timeo=30';
         const command = `sudo mount -t nfs -o ${options} "${source}" "${mountPoint}"`;
@@ -51,16 +45,14 @@ class NFSConnector {
             await execAsync(`sudo umount "${mountPoint}"`, { timeout: 10000 });
             await rm(mountPoint, { recursive: true, force: true });
         } catch {
-            // Ignore unmount errors
+            // ignore unmount errors
         }
     }
 
     async testConnection(config) {
         try {
-            // Try to mount and access
             const mountPoint = await this.mount(config);
 
-            // Verify we can read the directory
             await execAsync(`ls "${mountPoint}"`, { timeout: 5000 });
 
             return { success: true, message: 'Connection successful' };
@@ -70,10 +62,8 @@ class NFSConnector {
     }
 
     async backup(config, options = {}) {
-        // Mount NFS share
         const mountPoint = await this.mount(config);
 
-        // Use local connector to backup from mount point
         const LocalConnector = (await import('./local.js')).default;
         const localConnector = new LocalConnector();
 
@@ -81,21 +71,18 @@ class NFSConnector {
             const result = await localConnector.backup({ path: mountPoint }, options);
             return result;
         } finally {
-            // Don't unmount - leave it for potential future operations
+            // cleanup not required
         }
     }
 
     async upload(sourcePath, filename, config) {
-        // Mount NFS share
         const mountPoint = await this.mount(config);
 
-        // Use local connector to copy to mount point
         const LocalConnector = (await import('./local.js')).default;
         const localConnector = new LocalConnector();
 
         const result = await localConnector.upload(sourcePath, filename, { path: mountPoint });
 
-        // Adjust location to show NFS path
         return {
             ...result,
             location: `nfs://${config.host}${config.path}/${filename}`
@@ -103,10 +90,8 @@ class NFSConnector {
     }
 
     async download(location, config) {
-        // Mount NFS share
         const mountPoint = await this.mount(config);
 
-        // Parse location: nfs://host/path/filename
         const match = location.match(/^nfs:\/\/[^/]+(.+)$/);
         if (!match) {
             throw new Error('Invalid NFS location format');

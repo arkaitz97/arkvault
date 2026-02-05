@@ -4,7 +4,6 @@ import { promisify } from 'util';
 import archiver from 'archiver';
 import { createWriteStream, createReadStream } from 'fs';
 import { pipeline } from 'stream/promises';
-import { createGunzip } from 'zlib';
 import { Extract } from 'unzipper';
 
 const stat = promisify(fs.stat);
@@ -20,7 +19,6 @@ class LocalConnector {
             if (!stats.isDirectory()) {
                 return { success: false, error: 'Path is not a directory' };
             }
-            // Check if readable
             await readdir(config.path);
             return { success: true, message: 'Connection successful' };
         } catch (error) {
@@ -34,10 +32,8 @@ class LocalConnector {
         const filename = `backup-${timestamp}.zip`;
         const tempPath = path.join('/tmp', filename);
 
-        // Count files and calculate size
         const fileStats = await this.getDirectoryStats(sourcePath);
 
-        // Create zip archive
         await new Promise((resolve, reject) => {
             const output = createWriteStream(tempPath);
             const archive = archiver('zip', {
@@ -68,7 +64,6 @@ class LocalConnector {
         await mkdir(path.dirname(destPath), { recursive: true });
         await copyFile(sourcePath, destPath);
 
-        // Clean up temp file
         await rm(sourcePath, { force: true });
 
         return {
@@ -77,8 +72,7 @@ class LocalConnector {
         };
     }
 
-    async download(location, config) {
-        // For local, location is the file path
+    async download(location, _config) {
         return {
             path: location,
             isFile: true
@@ -89,7 +83,6 @@ class LocalConnector {
         const destPath = options.path;
         await mkdir(destPath, { recursive: true });
 
-        // Extract zip
         await pipeline(
             createReadStream(backupData.path),
             Extract({ path: destPath })

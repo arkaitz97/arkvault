@@ -6,7 +6,6 @@ import path from 'path';
 const execAsync = promisify(exec);
 const stat = promisify(fs.stat);
 const rm = promisify(fs.rm);
-const mkdir = promisify(fs.mkdir);
 
 class PostgreSQLConnector {
     buildConnectionEnv(config) {
@@ -24,12 +23,10 @@ class PostgreSQLConnector {
         try {
             const env = this.buildConnectionEnv(config);
 
-            // Try to connect using psql
             await execAsync('psql -c "SELECT 1"', { env, timeout: 10000 });
 
             return { success: true, message: 'Connection successful' };
         } catch (error) {
-            // Try with pg_isready as fallback
             try {
                 const { host, port, database, username } = config;
                 await execAsync(
@@ -37,7 +34,7 @@ class PostgreSQLConnector {
                     { timeout: 10000 }
                 );
                 return { success: true, message: 'Connection successful' };
-            } catch (pgError) {
+            } catch {
                 return { success: false, error: error.message };
             }
         }
@@ -51,7 +48,6 @@ class PostgreSQLConnector {
         const compressedPath = options.compression ? `${tempPath}.gz` : tempPath;
 
         try {
-            // Build pg_dump command
             let command = `pg_dump --format=plain`;
 
             if (options.compression) {
@@ -60,7 +56,7 @@ class PostgreSQLConnector {
                 command += ` > "${tempPath}"`;
             }
 
-            await execAsync(command, { env, timeout: 3600000 }); // 1 hour timeout
+            await execAsync(command, { env, timeout: 3600000 });
 
             const outputPath = options.compression ? compressedPath : tempPath;
             const fileStats = await stat(outputPath);
@@ -73,24 +69,21 @@ class PostgreSQLConnector {
                 isFile: true
             };
         } catch (error) {
-            // Cleanup on error
             await rm(tempPath, { force: true });
             await rm(compressedPath, { force: true });
             throw error;
         }
     }
 
-    async upload(sourcePath, filename, config) {
-        // PostgreSQL doesn't have a direct upload - this would be handled by the destination connector
+    async upload(_sourcePath, _filename, _config) {
         throw new Error('PostgreSQL cannot be used as a backup destination');
     }
 
-    async download(location, config) {
+    async download(_location, _config) {
         throw new Error('PostgreSQL cannot be used as a restore source directly');
     }
 
     async restore(backupData, options) {
-        // Restore from SQL dump
         const config = options;
         const env = this.buildConnectionEnv(config);
 
