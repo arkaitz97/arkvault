@@ -22,7 +22,7 @@ test.describe('Dashboard Page', () => {
     });
 
     test('should navigate to connectors when clicking sidebar', async ({ page }) => {
-        await page.getByRole('link', { name: /Connectors/i }).click();
+        await page.locator('.sidebar').getByRole('link', { name: /Connectors/i }).click();
         await expect(page).toHaveURL(/\/connectors/);
     });
 
@@ -32,7 +32,7 @@ test.describe('Dashboard Page', () => {
     });
 
     test('should navigate to restore when clicking sidebar', async ({ page }) => {
-        await page.getByRole('link', { name: /Restore/i }).click();
+        await page.locator('.sidebar').getByRole('link', { name: /Restore/i }).click();
         await expect(page).toHaveURL(/\/restore/);
     });
 });

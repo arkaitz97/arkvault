@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import os from 'os';
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -12,8 +13,8 @@ export default defineConfig({
     // Retry on CI only
     retries: process.env.CI ? 2 : 0,
 
-    // Opt out of parallel tests to avoid database contention
-    workers: 1,
+    // Run tests in parallel using all available cores
+    workers: os.cpus().length,
 
     // Reporter to use
     reporter: 'html',
@@ -38,7 +39,7 @@ export default defineConfig({
         },
         {
             name: 'chromium',
-            testIgnore: /.*auth\.spec\.js/, // Exclude auth tests that reset DB
+            testIgnore: /.*(auth|login_redirect)\.spec\.js/, // Exclude auth tests that reset DB
             use: {
                 ...devices['Desktop Chrome'],
                 storageState: 'tests/e2e/playwright/.auth/user.json',
@@ -47,7 +48,7 @@ export default defineConfig({
         },
         {
             name: 'auth-flow',
-            testMatch: /.*auth\.spec\.js/, // Run auth tests separately
+            testMatch: /.*(auth|login_redirect)\.spec\.js/, // Run auth tests separately
             use: {
                 ...devices['Desktop Chrome'],
                 storageState: { cookies: [], origins: [] }, // Start fresh
