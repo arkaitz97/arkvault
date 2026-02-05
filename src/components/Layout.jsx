@@ -9,8 +9,9 @@ export default function Layout() {
     const location = useLocation();
 
     useEffect(() => {
-        setSidebarOpen(false);
-    }, [location.pathname]);
+        // eslint-disable-next-line
+        if (sidebarOpen) setSidebarOpen(false);
+    }, [location.pathname, sidebarOpen]);
 
     useEffect(() => {
         const handleEscape = (e) => {
@@ -22,7 +23,6 @@ export default function Layout() {
 
     return (
         <div className={`layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
-            {/* Mobile hamburger button */}
             <button
                 className="mobile-menu-btn"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -31,7 +31,6 @@ export default function Layout() {
                 {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
-            {/* Sidebar with overlay for mobile */}
             <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
                 <Sidebar />

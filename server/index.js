@@ -4,6 +4,8 @@ import cron from 'node-cron';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+import session from 'express-session';
+import authRouter from './routes/auth.js';
 import connectorsRouter from './routes/connectors.js';
 import jobsRouter from './routes/jobs.js';
 import backupsRouter from './routes/backups.js';
@@ -16,8 +18,42 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
+
+app.use(session({
+    name: 'arkvault.sid',
+    secret: 'backup-app-secret',
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000
+    }
+}));
+
+app.use('/api/auth', authRouter);
+
+app.use('/api', (req, res, next) => {
+    if (req.path === '/auth/login' || req.path === '/auth/status' || req.path === '/health') {
+        return next();
+    }
+
+    if (!req.session.authenticated) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (req.session.mustChangePassword && req.path !== '/auth/change-password') {
+        return res.status(403).json({ error: 'Must change password', code: 'MUST_CHANGE_PASSWORD' });
+    }
+
+    next();
+});
 
 app.use('/api/connectors', connectorsRouter);
 app.use('/api/jobs', jobsRouter);
@@ -75,7 +111,7 @@ function unscheduleJob(jobId) {
 function refreshAllSchedules() {
     console.log('Refreshing all job schedules...');
 
-    scheduledTasks.forEach((task, id) => {
+    scheduledTasks.forEach((task) => {
         task.stop();
     });
     scheduledTasks.clear();

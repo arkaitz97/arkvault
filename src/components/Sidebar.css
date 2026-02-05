@@ -124,6 +124,15 @@
     color: var(--text-muted);
 }
 
+.logout-link:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.logout-link:hover .nav-icon {
+    color: #ef4444;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         width: var(--sidebar-width);

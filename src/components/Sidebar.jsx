@@ -7,8 +7,10 @@ import {
     Plug,
     History,
     Settings,
-    HardDrive
+    HardDrive,
+    LogOut
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const navItems = [
@@ -22,6 +24,7 @@ const navItems = [
 
 export default function Sidebar() {
     const location = useLocation();
+    const { logout } = useAuth();
 
     return (
         <aside className="sidebar">
@@ -67,6 +70,10 @@ export default function Sidebar() {
                     <Settings size={20} className="nav-icon" />
                     <span className="nav-label">Settings</span>
                 </NavLink>
+                <button onClick={logout} className="nav-link logout-link">
+                    <LogOut size={20} className="nav-icon" />
+                    <span className="nav-label">Logout</span>
+                </button>
                 <div className="version-info">
                     <span>v1.0.0</span>
                 </div>
