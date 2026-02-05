@@ -340,7 +340,7 @@ export default function BackupJobs() {
                 </div>
             )}
 
-            {/* Edit Modal */}
+
             {editModalOpen && editingJob && (
                 <div className="modal-overlay" onClick={closeEditModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>

@@ -29,22 +29,48 @@ class LocalConnector {
     async backup(config, options = {}) {
         const sourcePath = config.path;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `backup-${timestamp}.zip`;
+        const format = options.format || 'zip';
+        const isTar = format === 'tar';
+        const extension = isTar ? (options.compression ? 'tar.gz' : 'tar') : 'zip';
+        const filename = `backup-${timestamp}.${extension}`;
         const tempPath = path.join('/tmp', filename);
 
-        const fileStats = await this.getDirectoryStats(sourcePath);
+        // For file stats, we might want to count only what we are backing up if incremental
+        // But the original code counted everything in source.
+        // Let's stick to counting what is actually backed up.
 
-        await new Promise((resolve, reject) => {
+        let fileStats = { fileCount: 0, totalSize: 0 };
+
+        await new Promise(async (resolve, reject) => {
             const output = createWriteStream(tempPath);
-            const archive = archiver('zip', {
-                zlib: { level: options.compression ? 9 : 0 }
-            });
+            const archive = isTar
+                ? archiver('tar', {
+                    gzip: !!options.compression,
+                    gzipOptions: { level: 9 }
+                })
+                : archiver('zip', {
+                    zlib: { level: options.compression ? 9 : 0 }
+                });
 
             output.on('close', resolve);
             archive.on('error', reject);
 
             archive.pipe(output);
-            archive.directory(sourcePath, false);
+
+            if (options.incremental && options.lastRun) {
+                const files = await this.getFilesToBackup(sourcePath, options.lastRun);
+                fileStats.fileCount = files.length;
+                for (const file of files) {
+                    archive.file(file.fullPath, { name: file.relativePath });
+                    fileStats.totalSize += file.size; // Accumulate size
+                }
+                // If no files changed, we still create an empty backup or should we?
+                // An empty zip/tar is valid.
+            } else {
+                archive.directory(sourcePath, false);
+                fileStats = await this.getDirectoryStats(sourcePath);
+            }
+
             archive.finalize();
         });
 
@@ -57,6 +83,33 @@ class LocalConnector {
             filesProcessed: fileStats.fileCount,
             isFile: true
         };
+    }
+
+    async getFilesToBackup(dirPath, lastRun) {
+        const files = [];
+        const lastRunDate = new Date(lastRun);
+
+        const processDir = async (currentPath) => {
+            const entries = await readdir(currentPath, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = path.join(currentPath, entry.name);
+                if (entry.isDirectory()) {
+                    await processDir(fullPath);
+                } else {
+                    const fileStat = await stat(fullPath);
+                    if (fileStat.mtime > lastRunDate) {
+                        files.push({
+                            fullPath,
+                            relativePath: path.relative(dirPath, fullPath),
+                            size: fileStat.size
+                        });
+                    }
+                }
+            }
+        };
+
+        await processDir(dirPath);
+        return files;
     }
 
     async upload(sourcePath, filename, config) {

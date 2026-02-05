@@ -127,7 +127,7 @@ export default function History() {
                 </div>
             )}
 
-            {/* Stats Bar */}
+
             <div className="stats-bar">
                 <div className="stat-item">
                     <span className="stat-value">{history.length}</span>
@@ -145,7 +145,7 @@ export default function History() {
                 </div>
             </div>
 
-            {/* Filters */}
+
             <div className="filters-bar card">
                 <div className="search-box">
                     <Search size={18} />
@@ -172,7 +172,7 @@ export default function History() {
                 </div>
             </div>
 
-            {/* History Table */}
+
             {filteredHistory.length === 0 ? (
                 <div className="empty-state card">
                     <FileText size={64} />

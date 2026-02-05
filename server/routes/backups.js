@@ -67,7 +67,10 @@ router.post('/run/:jobId', async (req, res) => {
 
         const backupResult = await sourceConnector.backup(sourceConfig, {
             compression: !!job.compression,
-            encryption: !!job.encryption
+            encryption: !!job.encryption,
+            format: job.format || 'zip',
+            incremental: !!job.incremental,
+            lastRun: job.last_run_status === 'success' ? job.last_run : null
         });
 
         const uploadResult = await destConnector.upload(

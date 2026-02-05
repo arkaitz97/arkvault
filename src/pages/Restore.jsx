@@ -129,7 +129,7 @@ export default function Restore() {
             )}
 
             <div className="restore-layout">
-                {/* Backup List */}
+
                 <section className="backup-list-section">
                     <div className="section-header">
                         <h2>Available Backups</h2>
@@ -193,7 +193,7 @@ export default function Restore() {
                     </div>
                 </section>
 
-                {/* Restore Panel */}
+
                 <section className="restore-panel">
                     {!selectedBackup ? (
                         <div className="no-selection card">

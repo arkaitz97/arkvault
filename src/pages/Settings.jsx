@@ -114,7 +114,7 @@ export default function Settings() {
             )}
 
             <div className="settings-grid">
-                {/* Backup Defaults */}
+
                 <section className="settings-card">
                     <div className="card-header">
                         <Shield size={20} />
@@ -158,7 +158,7 @@ export default function Settings() {
                     </div>
                 </section>
 
-                {/* Notifications */}
+
                 <section className="settings-card">
                     <div className="card-header">
                         <Bell size={20} />
@@ -193,7 +193,7 @@ export default function Settings() {
                     </div>
                 </section>
 
-                {/* Database & Maintenance */}
+
                 <section className="settings-card">
                     <div className="card-header">
                         <Database size={20} />

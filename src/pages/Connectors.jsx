@@ -160,7 +160,7 @@ export default function Connectors() {
                 </div>
             )}
 
-            {/* Connector Types Overview */}
+
             <section className="connector-types-section">
                 <h2>Available Connector Types</h2>
                 <div className="connector-types-grid">
@@ -195,7 +195,7 @@ export default function Connectors() {
                 </div>
             </section>
 
-            {/* Configured Connectors */}
+
             <section className="configured-section">
                 <h2>Configured Connectors</h2>
 
@@ -278,7 +278,7 @@ export default function Connectors() {
                 )}
             </section>
 
-            {/* Add/Edit Modal */}
+
             {showModal && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>

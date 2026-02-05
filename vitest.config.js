@@ -4,13 +4,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     plugins: [react()],
     test: {
-        // Global test configuration
         globals: true,
-
-        // Workspace configuration
         projects: [
             {
-                // Unit tests for frontend
                 extends: true,
                 test: {
                     name: 'unit-frontend',
@@ -20,7 +16,6 @@ export default defineConfig({
                 }
             },
             {
-                // Unit tests for backend
                 extends: true,
                 test: {
                     name: 'unit-backend',
@@ -29,14 +24,11 @@ export default defineConfig({
                 }
             },
             {
-                // API integration tests
                 extends: true,
                 test: {
                     name: 'api',
                     include: ['tests/integration/api/**/*.test.js'],
                     environment: 'node',
-                    // Each API test creates its own isolated database
-                    // Run sequentially to avoid conflicts
                     sequence: {
                         concurrent: false
                     },
@@ -44,8 +36,6 @@ export default defineConfig({
                 }
             }
         ],
-
-        // Coverage configuration
         coverage: {
             provider: 'v8',
             reporter: ['text', 'html'],

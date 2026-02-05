@@ -36,6 +36,8 @@ db.exec(`
     retention INTEGER DEFAULT 30,
     compression INTEGER DEFAULT 1,
     encryption INTEGER DEFAULT 1,
+    format TEXT DEFAULT 'zip',
+    incremental INTEGER DEFAULT 0,
     status TEXT DEFAULT 'active',
     last_run TEXT,
     last_run_status TEXT,

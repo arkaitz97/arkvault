@@ -63,7 +63,9 @@ export default function CreateBackup() {
         customCron: '',
         retention: 30,
         compression: true,
-        encryption: true
+        encryption: true,
+        format: 'zip',
+        incremental: false
     });
 
     useEffect(() => {
@@ -123,7 +125,9 @@ export default function CreateBackup() {
                 schedule_description: formData.schedule === 'custom' ? 'Custom schedule' : selectedSchedule?.description,
                 retention: formData.retention,
                 compression: formData.compression,
-                encryption: formData.encryption
+                encryption: formData.encryption,
+                format: formData.format,
+                incremental: formData.incremental
             });
 
             navigate('/jobs');
@@ -443,13 +447,32 @@ export default function CreateBackup() {
                     <span className="input-hint">Backups older than this will be automatically deleted</span>
                 </div>
 
+                <div className="input-group">
+                    <label>Backup Format</label>
+                    <select
+                        className="input"
+                        value={formData.format}
+                        onChange={(e) => {
+                            const newFormat = e.target.value;
+                            setFormData({
+                                ...formData,
+                                format: newFormat,
+                                incremental: newFormat === 'zip' ? false : formData.incremental
+                            });
+                        }}
+                    >
+                        <option value="zip">Zip (.zip)</option>
+                        <option value="tar">Tar (.tar / .tar.gz)</option>
+                    </select>
+                </div>
+
                 <div className="toggle-options">
                     <label className="toggle-option">
                         <div className="toggle-info">
                             <Archive size={20} />
                             <div>
                                 <span className="toggle-label">Compression</span>
-                                <span className="toggle-description">Reduce backup size with gzip compression</span>
+                                <span className="toggle-description">Reduce backup size</span>
                             </div>
                         </div>
                         <input
@@ -472,6 +495,23 @@ export default function CreateBackup() {
                             type="checkbox"
                             checked={formData.encryption}
                             onChange={(e) => setFormData({ ...formData, encryption: e.target.checked })}
+                        />
+                        <span className="toggle-switch"></span>
+                    </label>
+
+                    <label className={`toggle-option ${formData.format !== 'tar' ? 'disabled' : ''}`}>
+                        <div className="toggle-info">
+                            <Clock size={20} />
+                            <div>
+                                <span className="toggle-label">Incremental Backup</span>
+                                <span className="toggle-description">Only backup changed files (Tar only)</span>
+                            </div>
+                        </div>
+                        <input
+                            type="checkbox"
+                            checked={formData.incremental}
+                            onChange={(e) => setFormData({ ...formData, incremental: e.target.checked })}
+                            disabled={formData.format !== 'tar'}
                         />
                         <span className="toggle-switch"></span>
                     </label>
@@ -552,12 +592,20 @@ export default function CreateBackup() {
                             <span className="review-value">{formData.retention} days</span>
                         </div>
                         <div className="review-item">
+                            <span className="review-label">Format:</span>
+                            <span className="review-value uppercase">{formData.format}</span>
+                        </div>
+                        <div className="review-item">
                             <span className="review-label">Compression:</span>
                             <span className="review-value">{formData.compression ? 'Enabled' : 'Disabled'}</span>
                         </div>
                         <div className="review-item">
                             <span className="review-label">Encryption:</span>
                             <span className="review-value">{formData.encryption ? 'Enabled' : 'Disabled'}</span>
+                        </div>
+                        <div className="review-item">
+                            <span className="review-label">Incremental:</span>
+                            <span className="review-value">{formData.incremental ? 'Enabled' : 'Disabled'}</span>
                         </div>
                     </div>
                 </div>
@@ -572,8 +620,9 @@ export default function CreateBackup() {
                 <p>Set up a new automated backup</p>
             </header>
 
-            {/* Progress Steps */}
             <div className="steps-progress">
+
+
                 {steps.map((step, index) => (
                     <div
                         key={step.id}
@@ -591,7 +640,7 @@ export default function CreateBackup() {
                 ))}
             </div>
 
-            {/* Step Content */}
+
             <div className="step-container card">
                 {currentStep === 1 && renderSourceStep()}
                 {currentStep === 2 && renderDestinationStep()}
@@ -599,7 +648,7 @@ export default function CreateBackup() {
                 {currentStep === 4 && renderOptionsStep()}
                 {currentStep === 5 && renderReviewStep()}
 
-                {/* Navigation */}
+
                 <div className="step-navigation">
                     <button
                         className="btn btn-secondary"
@@ -635,6 +684,6 @@ export default function CreateBackup() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
