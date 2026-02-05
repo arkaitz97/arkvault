@@ -10,11 +10,11 @@ test.describe('Connectors Page', () => {
     });
 
     test('should show add connector button', async ({ page }) => {
-        await expect(page.getByRole('button', { name: /Add Connector/i })).toBeVisible();
+        await expect(page.locator('header').getByRole('button', { name: /Add Connector/i })).toBeVisible();
     });
 
     test('should open add connector modal when clicking add button', async ({ page }) => {
-        await page.getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
 
         // Modal should appear with "Add New Connector" heading (h3)
         await expect(page.locator('.modal')).toBeVisible();
@@ -22,7 +22,7 @@ test.describe('Connectors Page', () => {
     });
 
     test('should show connector type options in modal', async ({ page }) => {
-        await page.getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
 
         // Wait for modal and check connector types
         await expect(page.locator('.modal')).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Connectors Page', () => {
     });
 
     test('should close modal when clicking close button', async ({ page }) => {
-        await page.getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
         await expect(page.locator('.modal')).toBeVisible();
 
         // Click close button (X icon in header)
@@ -40,7 +40,7 @@ test.describe('Connectors Page', () => {
 
     test('should select connector type and show form', async ({ page }) => {
         // Open modal
-        await page.getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
         await expect(page.locator('.modal')).toBeVisible();
 
         // Click the first type option (Local Folder)

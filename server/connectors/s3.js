@@ -13,7 +13,6 @@ import archiver from 'archiver';
 import { promisify } from 'util';
 
 const stat = promisify(fs.stat);
-const readdir = promisify(fs.readdir);
 const mkdir = promisify(fs.mkdir);
 const rm = promisify(fs.rm);
 
@@ -27,10 +26,9 @@ class S3Connector {
             }
         };
 
-        // Support custom S3-compatible endpoints (MinIO, Wasabi, etc.)
         if (config.endpoint) {
             clientConfig.endpoint = config.endpoint;
-            clientConfig.forcePathStyle = config.forcePathStyle !== false; // Default to true for compatibility
+            clientConfig.forcePathStyle = config.forcePathStyle !== false;
         }
 
         return new S3Client(clientConfig);
@@ -47,7 +45,6 @@ class S3Connector {
     }
 
     async backup(config, options = {}) {
-        // Download from S3 and create a local archive
         const client = this.getClient(config);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `s3-backup-${timestamp}.zip`;
@@ -56,7 +53,6 @@ class S3Connector {
 
         await mkdir(tempDir, { recursive: true });
 
-        // List and download objects
         let continuationToken = undefined;
         let fileCount = 0;
         const prefix = config.prefix || '';
@@ -87,7 +83,6 @@ class S3Connector {
             continuationToken = response.NextContinuationToken;
         } while (continuationToken);
 
-        // Create zip archive
         await new Promise((resolve, reject) => {
             const output = createWriteStream(tempPath);
             const archive = archiver('zip', {
@@ -102,7 +97,6 @@ class S3Connector {
             archive.finalize();
         });
 
-        // Cleanup temp download dir
         await rm(tempDir, { recursive: true, force: true });
 
         const archiveStats = await stat(tempPath);
@@ -130,7 +124,6 @@ class S3Connector {
             ContentLength: fileStats.size
         }));
 
-        // Clean up temp file
         await rm(sourcePath, { force: true });
 
         return {
@@ -142,7 +135,6 @@ class S3Connector {
     async download(location, config) {
         const client = this.getClient(config);
 
-        // Parse location: s3://bucket/key
         const match = location.match(/^s3:\/\/([^/]+)\/(.+)$/);
         if (!match) {
             throw new Error('Invalid S3 location format');
@@ -166,7 +158,6 @@ class S3Connector {
     }
 
     async restore(backupData, options) {
-        // For S3 as source, we just need to extract the downloaded backup
         const LocalConnector = (await import('./local.js')).default;
         const localConnector = new LocalConnector();
         return localConnector.restore(backupData, options);
