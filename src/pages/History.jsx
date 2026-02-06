@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { backupsAPI, formatBytes } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './History.css';
 
 const formatDuration = (startTime, endTime) => {
@@ -41,6 +42,11 @@ export default function History() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [expandedItem, setExpandedItem] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        historyId: null,
+        jobName: ''
+    });
 
     useEffect(() => {
         loadHistory();
@@ -90,13 +96,21 @@ export default function History() {
         window.open(backupsAPI.getDownloadUrl(historyId), '_blank');
     };
 
-    const handleDelete = async (e, historyId) => {
+    const handleDelete = (e, item) => {
         e.stopPropagation();
-        if (!window.confirm('Are you sure you want to delete this history entry?')) return;
+        setConfirmModal({
+            isOpen: true,
+            historyId: item.id,
+            jobName: item.job_name
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmModal.historyId) return;
 
         try {
-            setActionLoading(historyId);
-            await backupsAPI.deleteHistory(historyId);
+            setActionLoading(confirmModal.historyId);
+            await backupsAPI.deleteHistory(confirmModal.historyId);
             await loadHistory();
         } catch (err) {
             setError(err.message);
@@ -302,7 +316,7 @@ export default function History() {
 
                                                         <button
                                                             className="btn btn-ghost btn-sm danger"
-                                                            onClick={(e) => handleDelete(e, item.id)}
+                                                            onClick={(e) => handleDelete(e, item)}
                                                             disabled={actionLoading === item.id}
                                                         >
                                                             {actionLoading === item.id ? (
@@ -323,6 +337,16 @@ export default function History() {
                     </table>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete History Record"
+                message={`Are you sure you want to delete the record for "${confirmModal.jobName}"? The actual backup file might still exist.`}
+                confirmText="Delete Record"
+                type="danger"
+            />
         </div>
     );
 }

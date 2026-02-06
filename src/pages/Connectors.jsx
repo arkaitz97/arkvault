@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { connectorsAPI, connectorTypes, getConnectorType } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './Connectors.css';
 
 const getIcon = (type) => {
@@ -42,6 +43,11 @@ export default function Connectors() {
         type: '',
         name: '',
         config: {}
+    });
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        connectorId: null,
+        connectorName: ''
     });
 
     useEffect(() => {
@@ -104,14 +110,22 @@ export default function Connectors() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this connector?')) {
-            try {
-                await connectorsAPI.delete(id);
-                await loadConnectors();
-            } catch (err) {
-                setError(err.message);
-            }
+    const handleDelete = (connector) => {
+        setConfirmModal({
+            isOpen: true,
+            connectorId: connector.id,
+            connectorName: connector.name
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmModal.connectorId) return;
+
+        try {
+            await connectorsAPI.delete(confirmModal.connectorId);
+            await loadConnectors();
+        } catch (err) {
+            setError(err.message);
         }
     };
 
@@ -141,17 +155,16 @@ export default function Connectors() {
     return (
         <div className="connectors-page animate-fadeIn">
             <header className="page-header">
-                <div className="header-content">
-                    <div>
-                        <h1>Connectors</h1>
-                        <p>Manage your backup sources and destinations</p>
-                    </div>
-                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                        <PlusCircle size={20} />
-                        Add Connector
-                    </button>
-                </div>
+                <h1>Connectors</h1>
+                <p>Manage your backup sources and destinations</p>
             </header>
+
+            <div className="actions-toolbar">
+                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                    <PlusCircle size={20} />
+                    Add Connector
+                </button>
+            </div>
 
             {error && (
                 <div className="card" style={{ padding: '1rem', marginBottom: '1rem', background: 'var(--error-bg)', borderColor: 'var(--error)' }}>
@@ -265,7 +278,7 @@ export default function Connectors() {
                                         </button>
                                         <button
                                             className="btn btn-icon btn-ghost danger"
-                                            onClick={() => handleDelete(connector.id)}
+                                            onClick={() => handleDelete(connector)}
                                             title="Delete"
                                         >
                                             <Trash2 size={18} />
@@ -403,6 +416,16 @@ export default function Connectors() {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete Connector"
+                message={`Are you sure you want to delete "${confirmModal.connectorName}"? Strategies that depend on it may fail.`}
+                confirmText="Delete Connector"
+                type="danger"
+            />
         </div>
     );
 }

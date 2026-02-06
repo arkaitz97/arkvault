@@ -3,19 +3,18 @@
     margin: 0 auto;
 }
 
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
 
 
 .connector-types-section {
     margin-bottom: var(--spacing-2xl);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
 }
 
 .connector-types-section h2 {
     margin-bottom: var(--spacing-md);
+    font-size: 1rem;
 }
 
 .connector-types-grid {
@@ -29,6 +28,8 @@
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
 }
 
 .type-info {
@@ -39,16 +40,16 @@
 }
 
 .type-name {
-    font-weight: 600;
+    font-family: var(--font-mono);
+    font-weight: 700;
     color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.9rem;
 }
 
 .type-description {
     font-size: 0.75rem;
     color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .type-stats {
@@ -60,43 +61,50 @@
 }
 
 .type-count {
-    font-size: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--accent-primary);
 }
 
 .type-label {
-    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
     color: var(--text-muted);
+    text-transform: uppercase;
 }
 
 .type-capabilities {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 4px;
 }
 
 .capability {
-    font-size: 0.625rem;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .capability.source {
-    background: var(--info-bg);
     color: var(--info);
+    border-color: var(--info);
+    background: transparent;
 }
 
 .capability.dest {
-    background: var(--success-bg);
     color: var(--success);
+    border-color: var(--success);
+    background: transparent;
 }
 
-
-.configured-section h2 {
-    margin-bottom: var(--spacing-md);
+.configured-section {
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
 }
 
 .connectors-list {
@@ -109,67 +117,60 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.connector-item:hover {
+    background: white;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .connector-info {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0;
 }
 
 .connector-name {
-    font-weight: 600;
-    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .connector-type-label {
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
     color: var(--text-muted);
-}
-
-.connector-status {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--spacing-xs);
 }
 
 .status-badge {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-full);
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+    text-transform: uppercase;
 }
 
 .status-badge.connected {
-    background: var(--success-bg);
     color: var(--success);
+    background: var(--success-bg);
 }
 
 .status-badge.disconnected {
-    background: var(--error-bg);
     color: var(--error);
-}
-
-.last-tested {
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    background: white;
 }
 
 .connector-actions {
     display: flex;
     gap: var(--spacing-xs);
 }
-
-.connector-actions .btn.danger:hover {
-    color: var(--error);
-}
-
 
 .type-selection p {
     margin-bottom: var(--spacing-md);
@@ -189,57 +190,32 @@
     gap: var(--spacing-sm);
     padding: var(--spacing-lg);
     background: var(--bg-tertiary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
     cursor: pointer;
-    transition: all var(--transition-fast);
-    font-size: 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-primary);
+    text-transform: uppercase;
+    transition: all var(--transition-fast);
 }
 
 .type-option:hover {
     border-color: var(--accent-primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: white;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
-.connector-form {
+/* .header-content removed */
+
+.actions-toolbar {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.form-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-sm);
-}
-
-.form-header span {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-
-.connectors-page .empty-state {
-    padding: var(--spacing-2xl);
-}
-
-.connectors-page .empty-state svg {
-    color: var(--text-muted);
-    margin-bottom: var(--spacing-md);
-}
-
-.connectors-page .empty-state h3 {
-    margin-bottom: var(--spacing-sm);
-}
-
-.connectors-page .empty-state p {
+    justify-content: flex-end;
     margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px dashed var(--border-color);
 }
-
 
 @media (max-width: 768px) {
     .header-content {
@@ -258,8 +234,6 @@
 
     .connector-status {
         flex-basis: 100%;
-        flex-direction: row;
-        justify-content: space-between;
         margin-top: var(--spacing-sm);
     }
 

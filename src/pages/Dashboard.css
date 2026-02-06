@@ -3,58 +3,62 @@
     margin: 0 auto;
 }
 
-
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
+    /* Tighter gap */
     margin-bottom: var(--spacing-xl);
 }
 
 .stat-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
+    /* Sharp */
     padding: var(--spacing-lg);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    transition: all var(--transition-normal);
+    transition: all var(--transition-fast);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .stat-card:hover {
-    border-color: var(--border-color-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-md);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    /* Sharp */
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--border-color);
+    font-size: 1.2rem;
 }
 
 .stat-icon.active {
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--accent-primary);
+    background: var(--accent-primary);
+    color: white;
 }
 
 .stat-icon.success {
-    background: var(--success-bg);
-    color: var(--success);
+    background: var(--success);
+    color: white;
 }
 
 .stat-icon.error {
-    background: var(--error-bg);
-    color: var(--error);
+    background: var(--error);
+    color: white;
 }
 
 .stat-icon.info {
-    background: var(--info-bg);
-    color: var(--info);
+    background: var(--info);
+    color: white;
 }
 
 .stat-content {
@@ -63,17 +67,19 @@
 }
 
 .stat-value {
-    font-size: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
 }
 
 .stat-label {
-    font-size: 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     color: var(--text-muted);
+    text-transform: uppercase;
 }
-
 
 .dashboard-grid {
     display: grid;
@@ -83,7 +89,11 @@
 }
 
 .dashboard-section {
-    animation: slideUp var(--transition-normal) ease-out;
+    /* No animation for industrial feel, or very fast */
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-section.full-width {
@@ -95,24 +105,31 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .section-header h2 {
-    font-size: 1.125rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .section-link {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    font-size: 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     color: var(--accent-primary);
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 700;
 }
 
 .section-link:hover {
-    color: var(--accent-primary-hover);
+    text-decoration: underline;
 }
-
 
 .history-list {
     display: flex;
@@ -123,9 +140,9 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color);
-    transition: background var(--transition-fast);
+    font-family: var(--font-mono);
 }
 
 .history-item:last-child {
@@ -133,7 +150,7 @@
 }
 
 .history-item:hover {
-    background: var(--glass-bg);
+    background: var(--bg-tertiary);
 }
 
 .history-status {
@@ -156,18 +173,15 @@
 }
 
 .history-name {
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.85rem;
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .history-meta {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
 }
-
 
 .upcoming-list {
     display: flex;
@@ -178,7 +192,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -187,14 +201,15 @@
 }
 
 .upcoming-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    background: var(--glass-bg);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-muted);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .upcoming-info {
@@ -204,20 +219,24 @@
 }
 
 .upcoming-name {
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.85rem;
     color: var(--text-primary);
 }
 
 .upcoming-time {
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
     color: var(--accent-primary);
+    font-weight: 700;
 }
 
 .upcoming-schedule {
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
     color: var(--text-muted);
 }
-
 
 .connectors-grid {
     display: grid;
@@ -232,6 +251,9 @@
     text-align: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-lg);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .connector-info {
@@ -240,15 +262,18 @@
 }
 
 .connector-name {
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-weight: 700;
     color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
 }
 
 .connector-type {
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
     color: var(--text-muted);
 }
-
 
 .quick-actions {
     display: flex;
@@ -256,7 +281,6 @@
     justify-content: center;
     padding: var(--spacing-xl) 0;
 }
-
 
 @media (max-width: 1200px) {
     .stats-grid {

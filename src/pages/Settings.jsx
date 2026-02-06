@@ -12,6 +12,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { settingsAPI, formatBytes } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './Settings.css';
 
 export default function Settings() {
@@ -27,6 +28,12 @@ export default function Settings() {
     const [saving, setSaving] = useState(false);
     const [cleaning, setCleaning] = useState(false);
     const [message, setMessage] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { }
+    });
 
     const loadSettings = async () => {
         try {
@@ -66,10 +73,16 @@ export default function Settings() {
         }
     };
 
-    const handleCleanup = async () => {
-        if (!window.confirm('This will delete old backups based on retention policies. Continue?')) {
-            return;
-        }
+    const handleCleanup = () => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Run Cleanup?',
+            message: 'This will permanently delete old backups based on your retention policies. This action cannot be undone.',
+            onConfirm: performCleanup
+        });
+    };
+
+    const performCleanup = async () => {
         try {
             setCleaning(true);
             const result = await settingsAPI.runCleanup();
@@ -97,13 +110,8 @@ export default function Settings() {
     return (
         <div className="settings-page">
             <header className="page-header">
-                <div className="header-content">
-                    <SettingsIcon size={28} />
-                    <div>
-                        <h1>Settings</h1>
-                        <p className="header-subtitle">Configure ArkVault preferences</p>
-                    </div>
-                </div>
+                <h1>Settings</h1>
+                <p>Configure ArkVault preferences</p>
             </header>
 
             {message && (
@@ -135,24 +143,24 @@ export default function Settings() {
                         </div>
 
                         <div className="form-group checkbox-group">
-                            <label>
+                            <label className="toggle-option">
+                                <span>Enable compression by default</span>
                                 <input
                                     type="checkbox"
                                     checked={settings.defaultCompression}
                                     onChange={(e) => setSettings({ ...settings, defaultCompression: e.target.checked })}
                                 />
-                                <span>Enable compression by default</span>
                             </label>
                         </div>
 
                         <div className="form-group checkbox-group">
-                            <label>
+                            <label className="toggle-option">
+                                <span>Enable encryption by default</span>
                                 <input
                                     type="checkbox"
                                     checked={settings.defaultEncryption}
                                     onChange={(e) => setSettings({ ...settings, defaultEncryption: e.target.checked })}
                                 />
-                                <span>Enable encryption by default</span>
                             </label>
                         </div>
                     </div>
@@ -166,13 +174,13 @@ export default function Settings() {
                     </div>
                     <div className="card-body">
                         <div className="form-group checkbox-group">
-                            <label>
+                            <label className="toggle-option">
+                                <span>Enable email notifications</span>
                                 <input
                                     type="checkbox"
                                     checked={settings.notificationsEnabled}
                                     onChange={(e) => setSettings({ ...settings, notificationsEnabled: e.target.checked })}
                                 />
-                                <span>Enable email notifications</span>
                             </label>
                         </div>
 
@@ -245,6 +253,16 @@ export default function Settings() {
                     Reset
                 </button>
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText="Run Cleanup"
+                type="warning"
+            />
         </div>
     );
 }

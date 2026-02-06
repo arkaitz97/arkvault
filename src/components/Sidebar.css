@@ -1,10 +1,12 @@
+/* Retro-Modern Industrial Sidebar */
 .sidebar {
     position: fixed;
     left: 0;
     top: 0;
     width: var(--sidebar-width);
     height: 100vh;
-    background: var(--bg-secondary);
+    background: var(--bg-elevated);
+    /* Chassis color */
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -15,6 +17,7 @@
 .sidebar-header {
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
 }
 
 .logo {
@@ -27,12 +30,14 @@
     width: 44px;
     height: 44px;
     background: var(--accent-primary);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
+    /* Sharp corners */
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: var(--shadow-glow);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
 }
 
 .logo-text {
@@ -41,15 +46,19 @@
 }
 
 .logo-title {
-    font-size: 1.125rem;
+    font-family: var(--font-mono);
+    font-size: 1rem;
     font-weight: 700;
+    text-transform: uppercase;
     color: var(--text-primary);
-    line-height: 1.2;
+    letter-spacing: -0.05em;
 }
 
 .logo-subtitle {
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
     color: var(--text-muted);
+    text-transform: uppercase;
 }
 
 .sidebar-nav {
@@ -62,7 +71,8 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 4px;
+    /* Tight mechanical gap */
 }
 
 .nav-link {
@@ -70,48 +80,53 @@
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
     position: relative;
-    transition: all var(--transition-fast);
+    transition: all 0ms;
+    /* Instant mechanical switch */
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     width: 100%;
     cursor: pointer;
     text-align: left;
 }
 
 .nav-link:hover {
-    background: var(--glass-bg);
+    background: var(--bg-secondary);
     color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
 .nav-link.active {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--accent-primary-hover);
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--border-color);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.nav-link.active .nav-icon {
+    color: white;
 }
 
 .nav-icon {
     flex-shrink: 0;
 }
 
+/* Hide soft indicator, we use full buttons now */
 .nav-indicator {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
-    background: var(--accent-gradient);
-    border-radius: var(--radius-full);
+    display: none;
 }
 
 .sidebar-footer {
     padding: var(--spacing-md);
     border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
 }
 
 .settings-link {
@@ -120,26 +135,26 @@
 
 .version-info {
     text-align: center;
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
     color: var(--text-muted);
+    margin-top: var(--spacing-sm);
+    opacity: 0.5;
 }
 
 .logout-link:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
+    color: white;
+    background: var(--error);
+    border-color: var(--border-color);
 }
 
 .logout-link:hover .nav-icon {
-    color: #ef4444;
+    color: white;
 }
 
 @media (max-width: 768px) {
     .sidebar {
         width: var(--sidebar-width);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .version-info {
-        display: none;
+        box-shadow: 4px 0 0 rgba(0, 0, 0, 0.2);
     }
 }

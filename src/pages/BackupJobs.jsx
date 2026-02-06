@@ -18,10 +18,12 @@ import {
     CloudCog,
     Loader2,
     X,
-    Save
+    Save,
+    Zap
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { jobsAPI, connectorsAPI, backupsAPI, getConnectorType } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './BackupJobs.css';
 
 const getConnectorIcon = (type) => {
@@ -53,6 +55,11 @@ export default function BackupJobs() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingJob, setEditingJob] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        jobId: null,
+        jobName: ''
+    });
 
     useEffect(() => {
         loadData();
@@ -88,15 +95,23 @@ export default function BackupJobs() {
         }
     };
 
-    const deleteJob = async (jobId) => {
-        if (window.confirm('Are you sure you want to delete this backup job?')) {
-            try {
-                setActiveMenu(null);
-                await jobsAPI.delete(jobId);
-                await loadData();
-            } catch (err) {
-                setError(err.message);
-            }
+    const deleteJob = (job) => {
+        setActiveMenu(null);
+        setConfirmModal({
+            isOpen: true,
+            jobId: job.id,
+            jobName: job.name
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmModal.jobId) return;
+
+        try {
+            await jobsAPI.delete(confirmModal.jobId);
+            await loadData();
+        } catch (err) {
+            setError(err.message);
         }
     };
 
@@ -169,17 +184,16 @@ export default function BackupJobs() {
     return (
         <div className="backup-jobs animate-fadeIn">
             <header className="page-header">
-                <div className="header-content">
-                    <div>
-                        <h1>Backup Jobs</h1>
-                        <p>Manage your scheduled backup tasks</p>
-                    </div>
-                    <Link to="/create" className="btn btn-primary">
-                        <PlusCircle size={20} />
-                        New Backup Job
-                    </Link>
-                </div>
+                <h1>Backup Jobs</h1>
+                <p>Manage your scheduled backup tasks</p>
             </header>
+
+            <div className="actions-toolbar">
+                <Link to="/create" className="btn btn-primary">
+                    <PlusCircle size={20} />
+                    New Backup Job
+                </Link>
+            </div>
 
             {error && (
                 <div className="card" style={{ padding: '1rem', marginBottom: '1rem', background: 'var(--error-bg)', borderColor: 'var(--error)' }}>
@@ -225,7 +239,7 @@ export default function BackupJobs() {
                                             {runningJob === job.id ? (
                                                 <Loader2 size={18} className="animate-spin" />
                                             ) : (
-                                                <Play size={18} />
+                                                <Zap size={18} />
                                             )}
                                         </button>
                                         <button
@@ -252,7 +266,7 @@ export default function BackupJobs() {
                                                     </button>
                                                     <button
                                                         className="dropdown-item danger"
-                                                        onClick={() => deleteJob(job.id)}
+                                                        onClick={() => deleteJob(job)}
                                                     >
                                                         <Trash2 size={16} /> Delete
                                                     </button>
@@ -430,6 +444,16 @@ export default function BackupJobs() {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete Backup Job"
+                message={`Are you sure you want to delete "${confirmModal.jobName}"? This action cannot be undone.`}
+                confirmText="Delete Job"
+                type="danger"
+            />
         </div>
     );
 }

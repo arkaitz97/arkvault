@@ -2,6 +2,7 @@
     display: flex;
     min-height: 100vh;
     width: 100%;
+    background-color: var(--bg-primary);
 }
 
 .main-content {
@@ -15,14 +16,29 @@
 
 .page-header {
     margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .page-header h1 {
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0;
+    font-size: 1.5rem;
+    background: var(--accent-primary);
+    color: white;
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .page-header p {
     color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    margin-top: var(--spacing-xs);
 }
 
 
@@ -36,16 +52,23 @@
     height: 44px;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .mobile-menu-btn:hover {
     background: var(--bg-tertiary);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.mobile-menu-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 
@@ -74,7 +97,7 @@
         margin-left: 0;
         padding: var(--spacing-md);
         padding-top: calc(var(--spacing-md) + 60px);
-        
+
     }
 
     .sidebar-wrapper {
@@ -93,7 +116,10 @@
         display: block;
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.2);
+        /* dimming */
+        backdrop-filter: grayscale(100%);
+        /* industrial focus */
         opacity: 0;
         transition: opacity var(--transition-normal);
     }
@@ -112,7 +138,7 @@
     }
 
     .page-header h1 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }
 
@@ -128,6 +154,6 @@
     }
 
     .page-header h1 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
     }
 }

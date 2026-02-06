@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { backupsAPI, formatBytes } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './Restore.css';
 
 const getIcon = (jobName) => {
@@ -35,6 +36,11 @@ export default function Restore() {
     const [restoreConfig, setRestoreConfig] = useState({
         destinationType: 'local',
         destinationPath: ''
+    });
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        backupId: null,
+        jobName: ''
     });
 
     useEffect(() => {
@@ -89,13 +95,21 @@ export default function Restore() {
         }
     };
 
-    const handleDeleteBackup = async () => {
+    const handleDeleteBackup = () => {
         if (!selectedBackup) return;
-        if (!window.confirm(`Are you sure you want to delete this backup? This cannot be undone.`)) return;
+        setConfirmModal({
+            isOpen: true,
+            backupId: selectedBackup.id,
+            jobName: selectedBackup.job_name
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmModal.backupId) return;
 
         try {
             setIsDeleting(true);
-            await backupsAPI.deleteBackup(selectedBackup.id);
+            await backupsAPI.deleteBackup(confirmModal.backupId);
             setSelectedBackup(null);
             await loadBackups();
             alert('Backup deleted successfully!');
@@ -294,6 +308,20 @@ export default function Restore() {
 
                             <div className="restore-actions">
                                 <button
+                                    className="btn btn-primary"
+                                    onClick={handleRestore}
+                                    disabled={restoreConfig.destinationType === 'local' && !restoreConfig.destinationPath}
+                                >
+                                    <RotateCcw size={18} />
+                                    Start Restore
+                                </button>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setSelectedBackup(null)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
                                     className="btn btn-ghost danger"
                                     onClick={handleDeleteBackup}
                                     disabled={isDeleting}
@@ -305,26 +333,21 @@ export default function Restore() {
                                     )}
                                     Delete Backup
                                 </button>
-                                <div style={{ flex: 1 }} />
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setSelectedBackup(null)}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={handleRestore}
-                                    disabled={restoreConfig.destinationType === 'local' && !restoreConfig.destinationPath}
-                                >
-                                    <RotateCcw size={18} />
-                                    Start Restore
-                                </button>
                             </div>
                         </div>
                     )}
                 </section>
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete Backup"
+                message={`Are you sure you want to delete the backup for "${confirmModal.jobName}"? This cannot be undone.`}
+                confirmText="Delete Backup"
+                type="danger"
+            />
         </div>
     );
 }

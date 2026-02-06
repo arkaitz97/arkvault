@@ -9,9 +9,8 @@ export default function Layout() {
     const location = useLocation();
 
     useEffect(() => {
-        // eslint-disable-next-line
-        if (sidebarOpen) setSidebarOpen(false);
-    }, [location.pathname, sidebarOpen]);
+        setSidebarOpen(false);
+    }, [location.pathname]);
 
     useEffect(() => {
         const handleEscape = (e) => {
