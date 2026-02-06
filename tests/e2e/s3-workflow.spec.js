@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 
 const timestamp = Date.now();
-const CONTAINER_NAME = `arkvault-e2e-minio-${timestamp}`;
 const MINIO_PORT = 9000;
 const ACCESS_KEY = 'minioadmin';
 const SECRET_KEY = 'minioadmin';
@@ -21,11 +20,13 @@ test.describe('S3 Connector Workflow', () => {
     let s3Client;
 
     test.beforeAll(async () => {
-        console.log(`Starting MinIO container: ${CONTAINER_NAME}...`);
+        console.log('Starting MinIO container via npm script...');
         try {
-            execSync(`docker run -d --name ${CONTAINER_NAME} -p ${MINIO_PORT}:9000 -e "MINIO_ROOT_USER=${ACCESS_KEY}" -e "MINIO_ROOT_PASSWORD=${SECRET_KEY}" minio/minio server /data`);
-        } catch {
-            // ignore docker startup errors
+            // Stop any existing instance first to avoid conflicts
+            try { execSync('npm run s3:stop', { stdio: 'ignore' }); } catch { }
+            execSync('npm run s3:start');
+        } catch (e) {
+            console.error('Failed to start MinIO:', e);
         }
 
         s3Client = new S3Client({
@@ -64,9 +65,9 @@ test.describe('S3 Connector Workflow', () => {
     test.afterAll(() => {
         console.log('Cleaning up...');
         try {
-            execSync(`docker rm -f ${CONTAINER_NAME}`);
+            execSync('npm run s3:stop');
         } catch {
-            // ignore docker cleanup errors
+            // ignore cleanup errors
         }
 
         if (fs.existsSync(RESTORE_DIR)) fs.rmSync(RESTORE_DIR, { recursive: true, force: true });

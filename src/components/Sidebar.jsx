@@ -75,7 +75,7 @@ export default function Sidebar() {
                     <span className="nav-label">Logout</span>
                 </button>
                 <div className="version-info">
-                    <span>v1.0.0</span>
+                    <span>v0.1.0</span>
                 </div>
             </div>
         </aside>

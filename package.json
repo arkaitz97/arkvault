@@ -1,7 +1,7 @@
 {
   "name": "arkvault",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,12 @@
     "test:api": "vitest run --project=api",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "s3:start": "docker run -d --name arkvault-minio -p 9000:9000 -p 9001:9001 -e \"MINIO_ROOT_USER=minioadmin\" -e \"MINIO_ROOT_PASSWORD=minioadmin\" minio/minio server /data --console-address \":9001\"",
+    "s3:stop": "docker stop arkvault-minio && docker rm arkvault-minio",
+    "nfs:start": "docker run -d --privileged --name arkvault-nfs -v /tmp/nfs-share:/nfsshare -e SHARED_DIRECTORY=/nfsshare -p 22049:2049 itsthenetwork/nfs-server-alpine:latest",
+    "nfs:stop": "docker rm -f arkvault-nfs || true",
+    "db:reset": "node scripts/reset-auth.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",

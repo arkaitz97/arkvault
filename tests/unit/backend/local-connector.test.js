@@ -39,6 +39,45 @@ describe('LocalConnector', () => {
             expect(result.success).toBe(true);
         });
 
+        it('should resolve relative paths', async () => {
+            // Create a relative path test directory
+            const relativeName = `relative-test-${Date.now()}`;
+            await fs.mkdir(path.join(process.cwd(), relativeName), { recursive: true });
+
+            try {
+                const result = await connector.testConnection({ path: relativeName });
+                expect(result.success).toBe(true);
+            } finally {
+                await fs.rm(path.join(process.cwd(), relativeName), { recursive: true, force: true });
+            }
+        });
+
+        // We can't easily test ~ expansion without mocking os.homedir() or creating files in actual home dir
+        // Mocking os.homedir is safer
+        it('should expand home directory (~)', async () => {
+            const homeDir = os.homedir();
+            // Ensure we don't accidentally use a real home dir path that doesn't exist or is sensitive
+            // We'll mock the resolvePath behavior if needed, but here we can just test if logic works
+            // by using an existing path in home if possible, or mocking os.homedir to be tempdir
+
+            // Let's create a fake home dir in temp
+            const fakeHome = path.join(os.tmpdir(), `fake-home-${Date.now()}`);
+            await fs.mkdir(fakeHome, { recursive: true });
+
+            // Backup original homedir function
+            const originalHomedir = os.homedir;
+            os.homedir = () => fakeHome;
+
+            try {
+                const result = await connector.testConnection({ path: '~/.' });
+                expect(result.success).toBe(true);
+            } finally {
+                // Restore original
+                os.homedir = originalHomedir;
+                await fs.rm(fakeHome, { recursive: true, force: true });
+            }
+        });
+
         it('should fail for non-existent directory', async () => {
             const result = await connector.testConnection({ path: '/nonexistent/path/12345' });
             expect(result.success).toBe(false);

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { promisify } from 'util';
 import archiver from 'archiver';
 import { createWriteStream, createReadStream } from 'fs';
@@ -13,13 +14,25 @@ const copyFile = promisify(fs.copyFile);
 const rm = promisify(fs.rm);
 
 class LocalConnector {
+    resolvePath(inputPath) {
+        if (!inputPath) return inputPath;
+
+        let resolvedPath = inputPath;
+        if (resolvedPath.startsWith('~')) {
+            resolvedPath = path.join(os.homedir(), resolvedPath.slice(1));
+        }
+
+        return path.resolve(resolvedPath);
+    }
+
     async testConnection(config) {
         try {
-            const stats = await stat(config.path);
+            const resolvedPath = this.resolvePath(config.path);
+            const stats = await stat(resolvedPath);
             if (!stats.isDirectory()) {
                 return { success: false, error: 'Path is not a directory' };
             }
-            await readdir(config.path);
+            await readdir(resolvedPath);
             return { success: true, message: 'Connection successful' };
         } catch (error) {
             return { success: false, error: error.message };
@@ -27,7 +40,7 @@ class LocalConnector {
     }
 
     async backup(config, options = {}) {
-        const sourcePath = config.path;
+        const sourcePath = this.resolvePath(config.path);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const format = options.format || 'zip';
         const isTar = format === 'tar';
@@ -35,9 +48,6 @@ class LocalConnector {
         const filename = `backup-${timestamp}.${extension}`;
         const tempPath = path.join('/tmp', filename);
 
-        // For file stats, we might want to count only what we are backing up if incremental
-        // But the original code counted everything in source.
-        // Let's stick to counting what is actually backed up.
 
         let fileStats = { fileCount: 0, totalSize: 0 };
 
@@ -113,7 +123,7 @@ class LocalConnector {
     }
 
     async upload(sourcePath, filename, config) {
-        const destPath = path.join(config.path, filename);
+        const destPath = path.join(this.resolvePath(config.path), filename);
         await mkdir(path.dirname(destPath), { recursive: true });
         await copyFile(sourcePath, destPath);
 
@@ -126,6 +136,7 @@ class LocalConnector {
     }
 
     async download(location, _config) {
+        // For local connector, download does nothing but confirm existence/path
         return {
             path: location,
             isFile: true
@@ -133,7 +144,7 @@ class LocalConnector {
     }
 
     async restore(backupData, options) {
-        const destPath = options.path;
+        const destPath = this.resolvePath(options.path);
         await mkdir(destPath, { recursive: true });
 
         await pipeline(

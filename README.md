@@ -1,9 +1,15 @@
-# ArkVault
+# ArkVault 🛡️
 
 A modern, self-hosted backup management application with support for multiple storage backends.
 
+![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)
+
+<a href='https://ko-fi.com/U7U01TPY4Q' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+ArkVault simplifies your backup strategy with a unified interface for Local, NFS, S3, and Google Drive storage. Built with React 19 and Node.js, it provides automated retention, real-time status monitoring, and easy point-in-time restoration.
 
 ## Features
 
@@ -42,6 +48,17 @@ npm run start
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3001
 
+### Developer Helper Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run s3:start` | Start a local MinIO (S3) container for testing |
+| `npm run s3:stop` | Stop and remove the MinIO container |
+| `npm run nfs:start` | Start a local NFS server container for testing |
+| `npm run nfs:stop` | Stop and remove the NFS server container |
+| `npm run db:reset` | Reset the database authentication (admin/admin123) |
+
+
 ## Configuration
 
 ### Environment Variables
@@ -56,10 +73,21 @@ npm run start
 | Type | Source | Destination | Description |
 |------|--------|-------------|-------------|
 | **Local** | ✅ | ✅ | Local filesystem folders |
-| **NFS** | ✅ | ✅ | Network File System mounts |
+| **NFS** | ✅ | ✅ | Network File System mounts. **See [NFS Support](#nfs-support) for setup.** |
 | **S3** | ✅ | ✅ | S3-compatible storage (AWS, MinIO, etc.) |
 | **Google Drive** | ✅ | ✅ | Google Drive with OAuth |
 | **PostgreSQL** | ✅ | ❌ | Database dumps (pg_dump) |
+
+### NFS Support
+
+To use NFS connectors within Docker, the container requires elevated privileges to perform mount operations. The default `docker-compose.yml` is configured with:
+
+- `cap_add: [SYS_ADMIN, DAC_READ_SEARCH]`
+- `security_opt: [apparmor:unconfined]`
+
+Ensure the host machine has `nfs-common` (Debian/Ubuntu) or `nfs-utils` (RHEL/CentOS/Alpine) installed if you are mounting shares on the host directly, but for the Docker container layout, the necessary client tools are included in the image.
+
+**Note:** NFS mounting requires the container to run in privileged mode or with the specific capabilities enabled as shown above.
 
 ## API Reference
 

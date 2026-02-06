@@ -10,7 +10,10 @@ RUN npm run build
 
 # Stage 2: Install production dependencies
 FROM node:20-alpine AS deps
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ nfs-utils sudo
+# Configure sudo for node user to run mount/umount without password
+RUN echo "node ALL=(ALL) NOPASSWD: /bin/mount, /bin/umount, /usr/sbin/mount.nfs" >> /etc/sudoers
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev

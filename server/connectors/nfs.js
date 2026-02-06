@@ -16,13 +16,25 @@ class NFSConnector {
     async mount(config) {
         const mountPoint = this.getMountPoint(config);
 
+        // Check if already mounted
         try {
             const { stdout } = await execAsync(`mount | grep "${mountPoint}"`);
             if (stdout.trim()) {
-                return mountPoint;
+                try {
+                    // Try to list the directory to check for stale handle
+                    await execAsync(`ls "${mountPoint}"`, { timeout: 2000 });
+                    return mountPoint;
+                } catch (e) {
+                    try {
+                        await execAsync(`sudo umount -f "${mountPoint}"`, { timeout: 5000 });
+                    } catch (umountErr) {
+                        // Try lazy unmount if force fails
+                        await execAsync(`sudo umount -l "${mountPoint}"`, { timeout: 5000 });
+                    }
+                }
             }
-        } catch {
-            // mount check failed, assume not mounted
+        } catch (e) {
+            // mount check failed or unmount failed, proceed to try mounting
         }
 
         await mkdir(mountPoint, { recursive: true });
