@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import logger from '../logger.js';
 import fs from 'fs';
 import path from 'path';
 import { createReadStream, createWriteStream } from 'fs';
@@ -33,30 +34,28 @@ class GDriveConnector {
     }
 
     async testConnection(config) {
+        logger.info('Testing Google Drive connection');
         try {
-            const auth = this.getAuth(config);
-            const drive = google.drive({ version: 'v3', auth });
-
-            if (config.folderId) {
-                await drive.files.get({ fileId: config.folderId });
-            } else {
-                await drive.files.list({ pageSize: 1 });
-            }
-
+            const drive = this.getDrive(config);
+            await drive.about.get({ fields: 'user' });
+            logger.info('Google Drive connection test successful');
             return { success: true, message: 'Connection successful' };
         } catch (error) {
+            logger.error({ err: error }, 'Google Drive connection test failed');
             return { success: false, error: error.message };
         }
     }
 
     async backup(config, options = {}) {
-        const auth = this.getAuth(config);
-        const drive = google.drive({ version: 'v3', auth });
+        const drive = this.getDrive(config);
 
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `gdrive-backup-${timestamp}.zip`;
         const tempPath = path.join('/tmp', filename);
         const tempDir = path.join('/tmp', `gdrive-download-${timestamp}`);
+
+        logger.info({ folderId: config.folderId, tempPath }, 'Starting Google Drive backup');
+        const start = Date.now();
 
         await mkdir(tempDir, { recursive: true });
 
@@ -110,6 +109,14 @@ class GDriveConnector {
         await rm(tempDir, { recursive: true, force: true });
 
         const archiveStats = await stat(tempPath);
+        const duration = Date.now() - start;
+
+        logger.info({
+            filename,
+            size: archiveStats.size,
+            filesProcessed: fileCount,
+            durationMs: duration
+        }, 'Google Drive backup completed');
 
         return {
             data: tempPath,
@@ -121,31 +128,26 @@ class GDriveConnector {
     }
 
     async upload(sourcePath, filename, config) {
-        const auth = this.getAuth(config);
-        const drive = google.drive({ version: 'v3', auth });
-
-        const fileMetadata = {
-            name: filename,
-            parents: config.folderId ? [config.folderId] : []
-        };
-
-        const media = {
-            mimeType: 'application/zip',
-            body: createReadStream(sourcePath)
-        };
+        logger.info({ folderId: config.folderId, filename }, 'Starting Google Drive upload');
+        const drive = this.getDrive(config);
 
         const response = await drive.files.create({
-            resource: fileMetadata,
-            media,
-            fields: 'id, webViewLink'
+            requestBody: {
+                name: filename,
+                parents: config.folderId ? [config.folderId] : []
+            },
+            media: {
+                mimeType: 'application/octet-stream',
+                body: fs.createReadStream(sourcePath)
+            }
         });
 
         await rm(sourcePath, { force: true });
 
+        logger.info({ fileId: response.data.id, filename }, 'Google Drive upload completed');
         return {
             success: true,
-            location: `gdrive://${response.data.id}`,
-            webLink: response.data.webViewLink
+            location: `gdrive://${response.data.id}`
         };
     }
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import db from '../db.js';
+import logger from '../logger.js';
 
 const router = express.Router();
 
@@ -37,6 +38,7 @@ router.get('/', (req, res) => {
         });
         res.json(settings);
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch settings');
         res.status(500).json({ error: error.message });
     }
 });
@@ -50,8 +52,10 @@ router.put('/', (req, res) => {
             stmt.run(key, String(value));
         });
 
+        logger.info({ keys: Object.keys(updates) }, 'Settings updated');
         res.json({ success: true });
     } catch (error) {
+        logger.error({ err: error }, 'Failed to update settings');
         res.status(500).json({ error: error.message });
     }
 });
@@ -70,6 +74,7 @@ router.get('/stats', (req, res) => {
             connectors
         });
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch stats');
         res.status(500).json({ error: error.message });
     }
 });
@@ -87,12 +92,14 @@ router.post('/cleanup', (req, res) => {
             WHERE created_at < ? AND status = 'completed'
         `).run(cutoffDate.toISOString());
 
+        logger.info({ deleted: result.changes, cutoffDate: cutoffDate.toISOString() }, 'Settings cleanup completed');
         res.json({
             success: true,
             deleted: result.changes,
             cutoffDate: cutoffDate.toISOString()
         });
     } catch (error) {
+        logger.error({ err: error }, 'Settings cleanup failed');
         res.status(500).json({ error: error.message });
     }
 });

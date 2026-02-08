@@ -1,12 +1,13 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../db.js';
+import logger from '../logger.js';
 
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
     const { password } = req.body;
-    console.log('[Server] Login attempt received');
+    logger.info('Login attempt received');
 
     if (!password) {
         return res.status(400).json({ error: 'Password is required' });
@@ -16,22 +17,26 @@ router.post('/login', async (req, res) => {
         const authSettings = db.prepare('SELECT password_hash, must_change_password FROM auth_settings WHERE id = 1').get();
 
         const match = await bcrypt.compare(password, authSettings.password_hash);
-        console.log(`[Server] Password match result: ${match} | Received length: ${password.length} | DB hash: ${authSettings.password_hash.substring(0, 10)}...`);
+        logger.debug({
+            match,
+            receivedLength: password.length,
+            hashStart: authSettings.password_hash.substring(0, 10)
+        }, 'Password match result');
 
         if (match) {
             req.session.authenticated = true;
             req.session.mustChangePassword = !!authSettings.must_change_password;
-            console.log('[Server] Login successful. Session:', req.session);
+            logger.info({ session: req.session }, 'Login successful');
             return res.json({
                 authenticated: true,
                 mustChangePassword: !!authSettings.must_change_password
             });
         } else {
-            console.warn('[Server] Login failed: Invalid password');
+            logger.warn('Login failed: Invalid password');
             return res.status(401).json({ error: 'Invalid password' });
         }
     } catch (error) {
-        console.error('Login error:', error);
+        logger.error({ err: error }, 'Login error');
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -39,15 +44,20 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
+            logger.error({ err }, 'Logout error');
             return res.status(500).json({ error: 'Could not log out' });
         }
+        logger.info('Logout successful');
         res.clearCookie('arkvault.sid');
         res.json({ success: true });
     });
 });
 
 router.get('/status', (req, res) => {
-    console.log('[Server] Status check. Session ID:', req.sessionID, 'Authenticated:', req.session.authenticated);
+    logger.debug({
+        sessionId: req.sessionID,
+        authenticated: req.session.authenticated
+    }, 'Status check');
     if (req.session.authenticated) {
         res.json({
             authenticated: true,
@@ -87,7 +97,7 @@ router.post('/change-password', async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Change password error:', error);
+        logger.error({ err: error }, 'Change password error');
         res.status(500).json({ error: 'Internal server error' });
     }
 });

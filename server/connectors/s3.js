@@ -8,6 +8,7 @@ import {
 import fs from 'fs';
 import path from 'path';
 import { createReadStream, createWriteStream } from 'fs';
+import logger from '../logger.js';
 import { pipeline } from 'stream/promises';
 import archiver from 'archiver';
 import { promisify } from 'util';
@@ -35,11 +36,14 @@ class S3Connector {
     }
 
     async testConnection(config) {
+        logger.info({ bucket: config.bucket, endpoint: config.endpoint }, 'Testing S3 connection');
         try {
             const client = this.getClient(config);
             await client.send(new HeadBucketCommand({ Bucket: config.bucket }));
+            logger.info({ bucket: config.bucket }, 'S3 connection test successful');
             return { success: true, message: 'Connection successful' };
         } catch (error) {
+            logger.error({ err: error, bucket: config.bucket }, 'S3 connection test failed');
             return { success: false, error: error.message };
         }
     }
@@ -50,6 +54,9 @@ class S3Connector {
         const filename = `s3-backup-${timestamp}.zip`;
         const tempPath = path.join('/tmp', filename);
         const tempDir = path.join('/tmp', `s3-download-${timestamp}`);
+
+        logger.info({ bucket: config.bucket, prefix: config.prefix, tempPath }, 'Starting S3 backup');
+        const start = Date.now();
 
         await mkdir(tempDir, { recursive: true });
 
@@ -100,6 +107,14 @@ class S3Connector {
         await rm(tempDir, { recursive: true, force: true });
 
         const archiveStats = await stat(tempPath);
+        const duration = Date.now() - start;
+
+        logger.info({
+            filename,
+            size: archiveStats.size,
+            filesProcessed: fileCount,
+            durationMs: duration
+        }, 'S3 backup completed');
 
         return {
             data: tempPath,
@@ -111,6 +126,7 @@ class S3Connector {
     }
 
     async upload(sourcePath, filename, config) {
+        logger.info({ bucket: config.bucket, key: filename }, 'Starting S3 upload');
         const client = this.getClient(config);
         const key = path.join(config.prefix || '', filename);
 
@@ -126,6 +142,7 @@ class S3Connector {
 
         await rm(sourcePath, { force: true });
 
+        logger.info({ bucket: config.bucket, key }, 'S3 upload completed');
         return {
             success: true,
             location: `s3://${config.bucket}/${key}`

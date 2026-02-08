@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
+import logger from '../logger.js';
 
 const execAsync = promisify(exec);
 const mkdir = promisify(fs.mkdir);
@@ -44,9 +45,11 @@ class NFSConnector {
         const command = `sudo mount -t nfs -o ${options} "${source}" "${mountPoint}"`;
 
         try {
+            logger.debug({ source, mountPoint, options }, 'Mounting NFS share');
             await execAsync(command, { timeout: 30000 });
             return mountPoint;
         } catch (error) {
+            logger.error({ err: error, source, mountPoint }, 'Failed to mount NFS share');
             throw new Error(`Failed to mount NFS share: ${error.message}`);
         }
     }
@@ -62,13 +65,14 @@ class NFSConnector {
     }
 
     async testConnection(config) {
+        logger.info({ host: config.host, path: config.path }, 'Testing NFS connection');
         try {
             const mountPoint = await this.mount(config);
-
             await execAsync(`ls "${mountPoint}"`, { timeout: 5000 });
-
+            logger.info({ host: config.host, path: config.path }, 'NFS connection test successful');
             return { success: true, message: 'Connection successful' };
         } catch (error) {
+            logger.error({ err: error, host: config.host, path: config.path }, 'NFS connection test failed');
             return { success: false, error: error.message };
         }
     }
@@ -80,7 +84,9 @@ class NFSConnector {
         const localConnector = new LocalConnector();
 
         try {
+            logger.info({ host: config.host, path: config.path }, 'Starting NFS backup');
             const result = await localConnector.backup({ path: mountPoint }, options);
+            logger.info({ host: config.host, path: config.path, size: result.size }, 'NFS backup completed');
             return result;
         } finally {
             // cleanup not required
@@ -88,6 +94,7 @@ class NFSConnector {
     }
 
     async upload(sourcePath, filename, config) {
+        logger.info({ host: config.host, path: config.path, filename }, 'Starting NFS upload');
         const mountPoint = await this.mount(config);
 
         const LocalConnector = (await import('./local.js')).default;
@@ -95,6 +102,7 @@ class NFSConnector {
 
         const result = await localConnector.upload(sourcePath, filename, { path: mountPoint });
 
+        logger.info({ host: config.host, path: config.path, filename }, 'NFS upload completed');
         return {
             ...result,
             location: `nfs://${config.host}${config.path}/${filename}`

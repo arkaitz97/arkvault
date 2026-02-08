@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
+import logger from '../logger.js';
 import { getConnector } from '../connectors/index.js';
 import { calculateNextRun } from '../utils.js';
 
@@ -15,6 +16,7 @@ router.get('/history', (req, res) => {
     `).all();
         res.json(history);
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch backup history');
         res.status(500).json({ error: error.message });
     }
 });
@@ -28,6 +30,7 @@ router.get('/available', (req, res) => {
     `).all();
         res.json(backups);
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch available backups');
         res.status(500).json({ error: error.message });
     }
 });
@@ -136,6 +139,7 @@ router.post('/run/:jobId', async (req, res) => {
       WHERE id = ?
     `).run(req.params.jobId);
 
+        logger.error({ err: error, jobId: req.params.jobId }, 'Backup run failed');
         res.status(500).json({ error: error.message, success: false });
     }
 });
@@ -176,6 +180,7 @@ router.post('/restore/:backupId', async (req, res) => {
             destination: destination_path
         });
     } catch (error) {
+        logger.error({ err: error, jobId: req.params.jobId }, 'Manual backup run failed');
         res.status(500).json({ error: error.message, success: false });
     }
 });
@@ -188,6 +193,7 @@ router.get('/available/:id', (req, res) => {
         }
         res.json(backup);
     } catch (error) {
+        logger.error({ err: error, backupId: req.params.id }, 'Failed to fetch backup details');
         res.status(500).json({ error: error.message });
     }
 });
@@ -224,6 +230,7 @@ router.get('/download/:historyId', async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(backupData);
     } catch (error) {
+        logger.error({ err: error, historyId: req.params.historyId }, 'Backup download failed');
         res.status(500).json({ error: error.message });
     }
 });
@@ -236,6 +243,7 @@ router.delete('/history/:id', (req, res) => {
         }
         res.json({ success: true });
     } catch (error) {
+        logger.error({ err: error, historyId: req.params.id }, 'Failed to delete history entry');
         res.status(500).json({ error: error.message });
     }
 });
@@ -254,7 +262,7 @@ router.delete('/available/:id', async (req, res) => {
                 try {
                     await fs.unlink(backup.location);
                 } catch (e) {
-                    if (e.code !== 'ENOENT') console.error('Failed to delete backup file:', e);
+                    if (e.code !== 'ENOENT') logger.error({ err: e }, 'Failed to delete backup file');
                 }
             }
         }
@@ -262,6 +270,7 @@ router.delete('/available/:id', async (req, res) => {
         db.prepare('DELETE FROM available_backups WHERE id = ?').run(req.params.id);
         res.json({ success: true });
     } catch (error) {
+        logger.error({ err: error, backupId: req.params.id }, 'Failed to delete backup');
         res.status(500).json({ error: error.message });
     }
 });
@@ -274,6 +283,7 @@ router.delete('/cleanup', (req, res) => {
     `).run();
         res.json({ deleted: result.changes });
     } catch (error) {
+        logger.error({ err: error }, 'Backup cleanup failed');
         res.status(500).json({ error: error.message });
     }
 });

@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
+import logger from '../logger.js';
 import { getConnector } from '../connectors/index.js';
 
 const router = express.Router();
@@ -14,6 +15,7 @@ router.get('/', (req, res) => {
         }));
         res.json(parsed);
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch connectors');
         res.status(500).json({ error: error.message });
     }
 });
@@ -26,6 +28,7 @@ router.get('/:id', (req, res) => {
         }
         res.json({ ...connector, config: JSON.parse(connector.config) });
     } catch (error) {
+        logger.error({ err: error, connectorId: req.params.id }, 'Failed to fetch connector');
         res.status(500).json({ error: error.message });
     }
 });
@@ -41,8 +44,10 @@ router.post('/', (req, res) => {
     `).run(id, type, name, JSON.stringify(config));
 
         const connector = db.prepare('SELECT * FROM connectors WHERE id = ?').get(id);
+        logger.info({ connectorId: id, type, name }, 'Connector created');
         res.status(201).json({ ...connector, config: JSON.parse(connector.config) });
     } catch (error) {
+        logger.error({ err: error, type, name }, 'Failed to create connector');
         res.status(500).json({ error: error.message });
     }
 });
@@ -63,6 +68,7 @@ router.put('/:id', (req, res) => {
         }
         res.json({ ...connector, config: JSON.parse(connector.config) });
     } catch (error) {
+        logger.error({ err: error, connectorId: req.params.id }, 'Failed to update connector');
         res.status(500).json({ error: error.message });
     }
 });
@@ -71,10 +77,13 @@ router.delete('/:id', (req, res) => {
     try {
         const result = db.prepare('DELETE FROM connectors WHERE id = ?').run(req.params.id);
         if (result.changes === 0) {
+            logger.warn({ connectorId: req.params.id }, 'Connector not found for deletion');
             return res.status(404).json({ error: 'Connector not found' });
         }
+        logger.info({ connectorId: req.params.id }, 'Connector deleted');
         res.json({ success: true });
     } catch (error) {
+        logger.error({ err: error, connectorId: req.params.id }, 'Failed to delete connector');
         res.status(500).json({ error: error.message });
     }
 });
@@ -97,8 +106,10 @@ router.post('/:id/test', async (req, res) => {
       WHERE id = ?
     `).run(result.success ? 'connected' : 'disconnected', req.params.id);
 
+        logger.info({ connectorId: req.params.id, success: result.success }, 'Connector test completed');
         res.json(result);
     } catch (error) {
+        logger.error({ err: error, connectorId: req.params.id }, 'Connector test failed');
         res.status(500).json({ error: error.message, success: false });
     }
 });
@@ -108,8 +119,10 @@ router.post('/test', async (req, res) => {
         const { type, config } = req.body;
         const connectorInstance = getConnector(type);
         const result = await connectorInstance.testConnection(config);
+        logger.info({ type }, 'Ad-hoc connector test completed');
         res.json(result);
     } catch (error) {
+        logger.error({ err: error, type }, 'Ad-hoc connector test failed');
         res.status(500).json({ error: error.message, success: false });
     }
 });

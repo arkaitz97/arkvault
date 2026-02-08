@@ -6,6 +6,7 @@ import archiver from 'archiver';
 import { createWriteStream, createReadStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import { Extract } from 'unzipper';
+import logger from '../logger.js';
 
 const stat = promisify(fs.stat);
 const readdir = promisify(fs.readdir);
@@ -26,15 +27,19 @@ class LocalConnector {
     }
 
     async testConnection(config) {
+        const resolvedPath = this.resolvePath(config.path);
+        logger.debug({ path: config.path, resolvedPath }, 'Testing local connection');
         try {
-            const resolvedPath = this.resolvePath(config.path);
             const stats = await stat(resolvedPath);
             if (!stats.isDirectory()) {
+                logger.warn({ resolvedPath }, 'Connection test failed: Not a directory');
                 return { success: false, error: 'Path is not a directory' };
             }
             await readdir(resolvedPath);
+            logger.info({ resolvedPath }, 'Local connection test successful');
             return { success: true, message: 'Connection successful' };
         } catch (error) {
+            logger.error({ err: error, resolvedPath }, 'Local connection test failed');
             return { success: false, error: error.message };
         }
     }
@@ -48,6 +53,8 @@ class LocalConnector {
         const filename = `backup-${timestamp}.${extension}`;
         const tempPath = path.join('/tmp', filename);
 
+        logger.info({ sourcePath, tempPath, format, options }, 'Starting local backup');
+        const start = Date.now();
 
         let fileStats = { fileCount: 0, totalSize: 0 };
 
@@ -85,6 +92,14 @@ class LocalConnector {
         });
 
         const archiveStats = await stat(tempPath);
+        const duration = Date.now() - start;
+
+        logger.info({
+            filename,
+            size: archiveStats.size,
+            filesProcessed: fileStats.fileCount,
+            durationMs: duration
+        }, 'Local backup completed');
 
         return {
             data: tempPath,
@@ -123,12 +138,15 @@ class LocalConnector {
     }
 
     async upload(sourcePath, filename, config) {
-        const destPath = path.join(this.resolvePath(config.path), filename);
+        const resolvedPath = this.resolvePath(config.path);
+        const destPath = path.join(resolvedPath, filename);
+        logger.info({ sourcePath, destPath }, 'Uploading local file');
+
         await mkdir(path.dirname(destPath), { recursive: true });
         await copyFile(sourcePath, destPath);
-
         await rm(sourcePath, { force: true });
 
+        logger.info({ destPath }, 'Upload completed');
         return {
             success: true,
             location: destPath
@@ -145,6 +163,9 @@ class LocalConnector {
 
     async restore(backupData, options) {
         const destPath = this.resolvePath(options.path);
+        logger.info({ backupPath: backupData.path, destPath }, 'Starting local restore');
+        const start = Date.now();
+
         await mkdir(destPath, { recursive: true });
 
         await pipeline(
@@ -153,6 +174,14 @@ class LocalConnector {
         );
 
         const stats = await this.getDirectoryStats(destPath);
+        const duration = Date.now() - start;
+
+        logger.info({
+            destPath,
+            filesRestored: stats.fileCount,
+            durationMs: duration
+        }, 'Local restore completed');
+
         return {
             success: true,
             filesRestored: stats.fileCount

@@ -10,6 +10,8 @@ import connectorsRouter from './routes/connectors.js';
 import jobsRouter from './routes/jobs.js';
 import backupsRouter from './routes/backups.js';
 import settingsRouter from './routes/settings.js';
+import pinoHttp from 'pino-http';
+import logger from './logger.js';
 import db from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +24,7 @@ app.use(cors({
     origin: true,
     credentials: true
 }));
+app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: '50mb' }));
 
 app.use(session({
@@ -84,19 +87,19 @@ function scheduleJob(job) {
 
     if (job.status === 'active' && job.schedule && cron.validate(job.schedule)) {
         const task = cron.schedule(job.schedule, async () => {
-            console.log(`[${new Date().toISOString()}] Running scheduled backup: ${job.name}`);
+            logger.info({ jobId: job.id, jobName: job.name }, 'Running scheduled backup');
             try {
                 const response = await fetch(`http://localhost:${PORT}/api/backups/run/${job.id}`, {
                     method: 'POST'
                 });
                 const result = await response.json();
-                console.log(`[${new Date().toISOString()}] Backup ${job.name} completed:`, result);
+                logger.info({ jobId: job.id, jobName: job.name, result }, 'Backup completed');
             } catch (error) {
-                console.error(`[${new Date().toISOString()}] Backup ${job.name} failed:`, error);
+                logger.error({ jobId: job.id, jobName: job.name, err: error }, 'Backup failed');
             }
         });
         scheduledTasks.set(job.id, task);
-        console.log(`Scheduled job: ${job.name} (${job.id}) with cron: ${job.schedule}`);
+        logger.info({ jobId: job.id, jobName: job.name, schedule: job.schedule }, 'Scheduled job');
     }
 }
 
@@ -104,12 +107,12 @@ function unscheduleJob(jobId) {
     if (scheduledTasks.has(jobId)) {
         scheduledTasks.get(jobId).stop();
         scheduledTasks.delete(jobId);
-        console.log(`Unscheduled job: ${jobId}`);
+        logger.info({ jobId }, 'Unscheduled job');
     }
 }
 
 function refreshAllSchedules() {
-    console.log('Refreshing all job schedules...');
+    logger.info('Refreshing all job schedules...');
 
     scheduledTasks.forEach((task) => {
         task.stop();
@@ -124,13 +127,13 @@ function refreshAllSchedules() {
         scheduleJob(job);
     });
 
-    console.log(`Scheduled ${jobs.length} active jobs`);
+    logger.info({ count: jobs.length }, 'Scheduled active jobs');
 }
 
 export { scheduleJob, unscheduleJob, refreshAllSchedules };
 
 app.listen(PORT, () => {
-    console.log(`Backup server running on http://localhost:${PORT}`);
+    logger.info({ port: PORT }, 'Backup server running');
     refreshAllSchedules();
 
     cron.schedule('* * * * *', () => {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
+import logger from '../logger.js';
 import { calculateNextRun } from '../utils.js';
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get('/', (req, res) => {
         }));
         res.json(parsed);
     } catch (error) {
+        logger.error({ err: error }, 'Failed to fetch jobs');
         res.status(500).json({ error: error.message });
     }
 });
@@ -37,6 +39,7 @@ router.get('/:id', (req, res) => {
             incremental: !!job.incremental
         });
     } catch (error) {
+        logger.error({ err: error, jobId: req.params.id }, 'Failed to fetch job');
         res.status(500).json({ error: error.message });
     }
 });
@@ -79,6 +82,7 @@ router.post('/', (req, res) => {
         );
 
         const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(id);
+        logger.info({ jobId: id, name, sourceType: source_type, destType: destination_type }, 'Job created');
         res.status(201).json({
             ...job,
             source_config: job.source_config ? JSON.parse(job.source_config) : null,
@@ -86,6 +90,7 @@ router.post('/', (req, res) => {
             incremental: !!job.incremental
         });
     } catch (error) {
+        logger.error({ err: error, name }, 'Failed to create job');
         res.status(500).json({ error: error.message });
     }
 });
@@ -145,10 +150,11 @@ router.put('/:id', (req, res) => {
             req.params.id
         );
 
-        const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.id);
         if (!job) {
+            logger.warn({ jobId: req.params.id }, 'Job not found for update');
             return res.status(404).json({ error: 'Job not found' });
         }
+        logger.info({ jobId: req.params.id, name }, 'Job updated');
         res.json({
             ...job,
             source_config: job.source_config ? JSON.parse(job.source_config) : null,
@@ -156,6 +162,7 @@ router.put('/:id', (req, res) => {
             incremental: !!job.incremental
         });
     } catch (error) {
+        logger.error({ err: error, jobId: req.params.id }, 'Failed to update job');
         res.status(500).json({ error: error.message });
     }
 });
@@ -164,10 +171,13 @@ router.delete('/:id', (req, res) => {
     try {
         const result = db.prepare('DELETE FROM jobs WHERE id = ?').run(req.params.id);
         if (result.changes === 0) {
+            logger.warn({ jobId: req.params.id }, 'Job not found for deletion');
             return res.status(404).json({ error: 'Job not found' });
         }
+        logger.info({ jobId: req.params.id }, 'Job deleted');
         res.json({ success: true });
     } catch (error) {
+        logger.error({ err: error, jobId: req.params.id }, 'Failed to delete job');
         res.status(500).json({ error: error.message });
     }
 });
@@ -183,8 +193,10 @@ router.post('/:id/toggle', (req, res) => {
         db.prepare('UPDATE jobs SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
             .run(newStatus, req.params.id);
 
+        logger.info({ jobId: req.params.id, status: newStatus }, 'Job status toggled');
         res.json({ status: newStatus });
     } catch (error) {
+        logger.error({ err: error, jobId: req.params.id }, 'Failed to toggle job status');
         res.status(500).json({ error: error.message });
     }
 });
