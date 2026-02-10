@@ -72,7 +72,16 @@ npm run start
 | `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma-separated list of allowed CORS origins |
 | `SESSION_SECRET` | `backup-app-secret-change-me-in-production` | Secret used to sign session cookies |
 | `NODE_ENV` | `development` | Set to `production` for secure cookie handling |
+| `LOG_LEVEL` | `info` | Logging verbosity (silent, fatal, error, warn, info, debug, trace) |
+| `LOG_FILE` | (none) | Path to log file. If set, logs to both file and console |
 
+### Logs
+
+When running with Docker, logs are persisted in a named volume `backup-logs`. By default, they are written to `/app/logs/arkvault.log` inside the container.
+
+To view logs:
+- **Console**: `docker logs arkvault`
+- **File**: `docker exec arkvault cat /app/logs/arkvault.log`
 
 ### Connector Types
 
