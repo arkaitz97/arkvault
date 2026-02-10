@@ -66,7 +66,7 @@ export default function Sidebar() {
             </nav>
 
             <div className="sidebar-footer">
-                <NavLink to="/settings" className={({ isActive }) => `nav-link settings-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/settings" className={({ isActive }) => `nav-link settings-link ${isActive ? 'active' : ''}`} data-testid="settings-nav-link">
                     <Settings size={20} className="nav-icon" />
                     <span className="nav-label">Settings</span>
                 </NavLink>

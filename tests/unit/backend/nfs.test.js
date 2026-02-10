@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const execMock = vi.fn();
 
-// Mock child_process
 vi.mock('child_process', () => {
     return {
         exec: (cmd, options, callback) => {
@@ -14,7 +13,6 @@ vi.mock('child_process', () => {
             if (execMock) {
                 execMock(cmd, callback);
             } else if (callback) {
-                // Default fallback
                 callback(null, { stdout: '', stderr: '' });
             }
             return {};
@@ -22,7 +20,6 @@ vi.mock('child_process', () => {
     };
 });
 
-// Mock fs
 const mkdirMock = vi.fn();
 const rmMock = vi.fn();
 vi.mock('fs', async () => {
@@ -43,7 +40,6 @@ vi.mock('fs', async () => {
     };
 });
 
-// Mock LocalConnector
 const localBackupMock = vi.fn();
 const localRestoreMock = vi.fn();
 const localUploadMock = vi.fn();
@@ -79,15 +75,9 @@ describe('NFSConnector', () => {
         mkdirMock.mockResolvedValue(undefined);
         rmMock.mockResolvedValue(undefined);
 
-        // Default exec mock
         execMock.mockImplementation((cmd, cb) => {
             if (!cb || typeof cb !== 'function') return;
 
-            // Note: Since we are mocking exec and passing it to util.promisify, 
-            // but NOT using the native child_process.exec identity, 
-            // util.promisify treats it as a generic callback function (err, value).
-            // It expects 'value' to be the result.
-            // So we must pass { stdout, stderr } as the second argument, NOT as 2nd and 3rd args.
 
             if (cmd.includes('mount | grep')) {
                 cb(null, { stdout: '', stderr: '' }); // Not mounted

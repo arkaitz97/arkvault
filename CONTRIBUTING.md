@@ -90,6 +90,16 @@ export default MyConnector;
 2. Register in `server/connectors/index.js`
 3. Add UI form in `src/pages/Connectors.jsx`
 
+## Security Best Practices
+
+When contributing to ArkVault, please keep the following security guidelines in mind:
+
+- **Path Validation**: Always use `server/utils/path-validator.js` when handling file paths from user input. Never trust raw paths to prevent path traversal.
+- **Input Validation**: Use the provided validation middleware for all new API routes to ensure data integrity.
+- **Avoid Shell Execution**: Prefer Node.js native modules over spawning shell commands. If exec is unavoidable, never pass unsanitized user input.
+- **Session Checks**: Ensure all protected routes are wrapped in the authentication middleware.
+- **Sensitive Data**: Never log passwords, tokens, or other sensitive information. Use the configured logger.
+
 ## Pull Request Process
 
 1. Fork the repository

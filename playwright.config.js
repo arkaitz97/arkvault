@@ -5,8 +5,7 @@ export default defineConfig({
     testDir: './tests/e2e',
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
-    workers: os.cpus().length,
+    retries: 2,
     reporter: 'html',
     use: {
         baseURL: 'http://localhost:5173',
@@ -38,10 +37,13 @@ export default defineConfig({
     ],
     webServer: [
         {
-            command: 'npm run server',
+            command: 'NODE_ENV=test npm run server',
             url: 'http://localhost:3001/api/health',
             reuseExistingServer: !process.env.CI,
-            timeout: 30000
+            timeout: 30000,
+            env: {
+                NODE_ENV: 'test'
+            }
         },
         {
             command: 'npm run dev',

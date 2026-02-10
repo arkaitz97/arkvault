@@ -190,7 +190,7 @@ export const mockBackupHistory = [
         startTime: new Date('2026-01-26T03:00:00'),
         endTime: new Date('2026-01-26T03:45:22'),
         status: 'success',
-        size: 1024 * 1024 * 1024 * 2.3, // 2.3 GB
+        size: 1024 * 1024 * 1024 * 2.3,
         filesProcessed: 1,
         destination: 'S3: myapp-backups/prod/'
     },

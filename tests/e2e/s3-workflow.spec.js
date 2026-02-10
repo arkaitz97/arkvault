@@ -74,10 +74,10 @@ test.describe('S3 Connector Workflow', () => {
     });
 
     test('should complete full lifecycle: Connect Local -> Connect S3 -> Backup -> Restore', async ({ page }) => {
-        test.setTimeout(120000);
+        test.setTimeout(30000);
 
         await page.goto('/connectors');
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
 
         // Use general config selector because 'Connector Name' label is not associated with input via 'for'
@@ -90,7 +90,7 @@ test.describe('S3 Connector Workflow', () => {
         const sourceItem = page.locator('.connector-item').filter({ hasText: `Local-Source-${timestamp}` });
         await expect(sourceItem).toBeVisible();
 
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'S3 Compatible' }).click();
 
         // Fill Connector Name

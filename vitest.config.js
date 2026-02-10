@@ -26,6 +26,26 @@ export default defineConfig({
             {
                 extends: true,
                 test: {
+                    name: 'unit-utils',
+                    include: ['tests/unit/path-validator.test.js'],
+                    environment: 'node'
+                }
+            },
+            {
+                extends: true,
+                test: {
+                    name: 'security',
+                    include: ['tests/integration/security.test.js'],
+                    environment: 'node',
+                    sequence: {
+                        concurrent: false
+                    },
+                    fileParallelism: false
+                }
+            },
+            {
+                extends: true,
+                test: {
                     name: 'api',
                     include: ['tests/integration/api/**/*.test.js'],
                     environment: 'node',

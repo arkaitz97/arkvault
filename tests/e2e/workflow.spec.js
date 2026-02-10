@@ -26,9 +26,9 @@ test.describe('Full Backup & Restore Workflow', () => {
     });
 
     test('should complete full lifecycle: connect -> job -> backup -> history -> restore', async ({ page }) => {
-        test.setTimeout(120000);
+        test.setTimeout(30000);
         await page.goto('/connectors');
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
 
         await page.fill('input[placeholder="e.g., Production Database"]', `Source-${timestamp}`);
@@ -40,7 +40,7 @@ test.describe('Full Backup & Restore Workflow', () => {
         await sourceItem.getByTitle('Test connection').click();
         await expect(sourceItem.locator('.connected')).toBeVisible();
 
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
 
         await page.fill('input[placeholder="e.g., Production Database"]', `Dest-${timestamp}`);

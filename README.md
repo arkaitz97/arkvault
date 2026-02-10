@@ -20,6 +20,8 @@ ArkVault simplifies your backup strategy with a unified interface for Local, NFS
 - 🔐 **Encryption** - Optional backup encryption
 - 📦 **Compression** - Reduce storage with ZIP compression
 - 🎯 **Retention Policies** - Automatic cleanup of old backups
+- 🛡️ **Security First** - Built-in protection with Helmet, Rate Limiting, and Path Validation
+
 
 ## Quick Start
 
@@ -67,6 +69,10 @@ npm run start
 |----------|---------|-------------|
 | `PORT` | `3001` | Backend server port |
 | `DATABASE_PATH` | `./server/arkvault.db` | SQLite database location |
+| `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma-separated list of allowed CORS origins |
+| `SESSION_SECRET` | `backup-app-secret-change-me-in-production` | Secret used to sign session cookies |
+| `NODE_ENV` | `development` | Set to `production` for secure cookie handling |
+
 
 ### Connector Types
 
@@ -98,6 +104,17 @@ Ensure the host machine has `nfs-common` (Debian/Ubuntu) or `nfs-utils` (RHEL/Ce
 | `/api/backups/run/:jobId` | POST | Trigger manual backup |
 | `/api/backups/history` | GET | Get backup history |
 | `/api/backups/restore/:id` | POST | Restore from backup |
+
+## Security Features
+
+ArkVault includes several layers of security to protect your data and the application:
+
+- **HTTP Security Headers**: Uses [Helmet](https://helmetjs.github.io/) to set secure HTTP headers, including Content Security Policy (CSP), HSTS, and Frameguard.
+- **Rate Limiting**: Protects against brute-force and DoS attacks with granular rate limits for authentication, general API usage, and file downloads.
+- **Path Validation**: Strict validation for all connector paths to prevent path traversal vulnerabilities.
+- **Secure Sessions**: Signed session cookies with `HttpOnly` and `SameSite: Lax` attributes. In production, `Secure` flag is enforced.
+- **CORS Protection**: Configurable allowed origins to prevent unauthorized cross-origin requests.
+
 
 ## Tech Stack
 

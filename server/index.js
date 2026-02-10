@@ -13,6 +13,9 @@ import settingsRouter from './routes/settings.js';
 import pinoHttp from 'pino-http';
 import logger from './logger.js';
 import db from './db.js';
+import { configureHelmet } from './helmet-config.js';
+import { apiRateLimiter } from './rate-limit-config.js';
+import { errorHandler } from './middleware/error-handler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,23 +23,40 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+configureHelmet(app);
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:5173', 'http://localhost:3000'];
+
 app.use(cors({
-    origin: true,
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 600
 }));
+
 app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: '50mb' }));
+app.use(apiRateLimiter);
 
 app.use(session({
     name: 'arkvault.sid',
-    secret: 'backup-app-secret',
-    resave: true,
-    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET || 'backup-app-secret-change-me-in-production',
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000
+        maxAge: 8 * 60 * 60 * 1000
     }
 }));
 
@@ -131,6 +151,8 @@ function refreshAllSchedules() {
 }
 
 export { scheduleJob, unscheduleJob, refreshAllSchedules };
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     logger.info({ port: PORT }, 'Backup server running');

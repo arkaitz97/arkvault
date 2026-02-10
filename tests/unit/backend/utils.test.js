@@ -3,27 +3,26 @@ import { calculateNextRun, formatBytes } from '../../../server/utils.js';
 
 describe('calculateNextRun', () => {
     it('should return a date string for valid cron expression', () => {
-        const result = calculateNextRun('0 * * * *'); // Every hour
+        const result = calculateNextRun('0 * * * *');
         expect(result).toBeDefined();
         expect(typeof result).toBe('string');
-        // Should be in ISO format
         expect(new Date(result).toString()).not.toBe('Invalid Date');
     });
 
     it('should return a future date', () => {
-        const result = calculateNextRun('0 0 * * *'); // Daily at midnight
+        const result = calculateNextRun('0 0 * * *');
         const nextDate = new Date(result);
         const now = new Date();
         expect(nextDate.getTime()).toBeGreaterThan(now.getTime());
     });
 
     it('should handle daily schedule', () => {
-        const result = calculateNextRun('0 2 * * *'); // Daily at 2 AM
+        const result = calculateNextRun('0 2 * * *');
         expect(result).toBeDefined();
     });
 
     it('should handle weekly schedule', () => {
-        const result = calculateNextRun('0 2 * * 0'); // Sunday at 2 AM
+        const result = calculateNextRun('0 2 * * 0');
         expect(result).toBeDefined();
     });
 
@@ -70,7 +69,7 @@ describe('formatBytes', () => {
     });
 
     it('should handle decimal values', () => {
-        const result = formatBytes(1536); // 1.5 KB
+        const result = formatBytes(1536);
         expect(result).toBe('1.5 KB');
     });
 });

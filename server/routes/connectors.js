@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import logger from '../logger.js';
 import { getConnector } from '../connectors/index.js';
+import { validateConnectorCreation, validateUUID } from '../middleware/validation-middleware.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/', (req, res) => {
     }
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUUID, (req, res) => {
     try {
         const connector = db.prepare('SELECT * FROM connectors WHERE id = ?').get(req.params.id);
         if (!connector) {
@@ -33,7 +34,7 @@ router.get('/:id', (req, res) => {
     }
 });
 
-router.post('/', (req, res) => {
+router.post('/', validateConnectorCreation, (req, res) => {
     try {
         const { type, name, config } = req.body;
         const id = uuidv4();
@@ -52,7 +53,7 @@ router.post('/', (req, res) => {
     }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUUID, validateConnectorCreation, (req, res) => {
     try {
         const { type, name, config } = req.body;
 
@@ -73,7 +74,7 @@ router.put('/:id', (req, res) => {
     }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUUID, (req, res) => {
     try {
         const result = db.prepare('DELETE FROM connectors WHERE id = ?').run(req.params.id);
         if (result.changes === 0) {
@@ -88,7 +89,7 @@ router.delete('/:id', (req, res) => {
     }
 });
 
-router.post('/:id/test', async (req, res) => {
+router.post('/:id/test', validateUUID, async (req, res) => {
     try {
         const connector = db.prepare('SELECT * FROM connectors WHERE id = ?').get(req.params.id);
         if (!connector) {

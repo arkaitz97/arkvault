@@ -2,10 +2,12 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../db.js';
 import logger from '../logger.js';
+import { authRateLimiter } from '../rate-limit-config.js';
+import { validateLogin, validateChangePassword } from '../middleware/validation-middleware.js';
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimiter, validateLogin, async (req, res) => {
     const { password } = req.body;
     logger.info('Login attempt received');
 
@@ -19,7 +21,6 @@ router.post('/login', async (req, res) => {
         const match = await bcrypt.compare(password, authSettings.password_hash);
         logger.debug({
             match,
-            receivedLength: password.length,
             hashStart: authSettings.password_hash.substring(0, 10)
         }, 'Password match result');
 
@@ -68,24 +69,12 @@ router.get('/status', (req, res) => {
     }
 });
 
-router.post('/change-password', async (req, res) => {
+router.post('/change-password', authRateLimiter, validateChangePassword, async (req, res) => {
     if (!req.session.authenticated) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const { newPassword, confirmPassword } = req.body;
-
-    if (!newPassword || !confirmPassword) {
-        return res.status(400).json({ error: 'New password and confirmation are required' });
-    }
-
-    if (newPassword !== confirmPassword) {
-        return res.status(400).json({ error: 'Passwords do not match' });
-    }
-
-    if (newPassword.length < 8) {
-        return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-    }
+    const { newPassword } = req.body;
 
     try {
         const saltRounds = 10;

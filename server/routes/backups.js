@@ -4,6 +4,8 @@ import db from '../db.js';
 import logger from '../logger.js';
 import { getConnector } from '../connectors/index.js';
 import { calculateNextRun } from '../utils.js';
+import { downloadRateLimiter } from '../rate-limit-config.js';
+import { validateUUID, validateRestoreRequest } from '../middleware/validation-middleware.js';
 
 const router = express.Router();
 
@@ -35,7 +37,7 @@ router.get('/available', (req, res) => {
     }
 });
 
-router.post('/run/:jobId', async (req, res) => {
+router.post('/run/:jobId', validateUUID, async (req, res) => {
     const historyId = uuidv4();
 
     try {
@@ -144,7 +146,7 @@ router.post('/run/:jobId', async (req, res) => {
     }
 });
 
-router.post('/restore/:backupId', async (req, res) => {
+router.post('/restore/:backupId', validateUUID, validateRestoreRequest, async (req, res) => {
     try {
         const backup = db.prepare('SELECT * FROM available_backups WHERE id = ?').get(req.params.backupId);
         if (!backup) {
@@ -185,7 +187,7 @@ router.post('/restore/:backupId', async (req, res) => {
     }
 });
 
-router.get('/available/:id', (req, res) => {
+router.get('/available/:id', validateUUID, (req, res) => {
     try {
         const backup = db.prepare('SELECT * FROM available_backups WHERE id = ?').get(req.params.id);
         if (!backup) {
@@ -198,7 +200,7 @@ router.get('/available/:id', (req, res) => {
     }
 });
 
-router.get('/download/:historyId', async (req, res) => {
+router.get('/download/:historyId', downloadRateLimiter, validateUUID, async (req, res) => {
     try {
         const history = db.prepare('SELECT * FROM backup_history WHERE id = ?').get(req.params.historyId);
         if (!history) {
@@ -235,7 +237,7 @@ router.get('/download/:historyId', async (req, res) => {
     }
 });
 
-router.delete('/history/:id', (req, res) => {
+router.delete('/history/:id', validateUUID, (req, res) => {
     try {
         const result = db.prepare('DELETE FROM backup_history WHERE id = ?').run(req.params.id);
         if (result.changes === 0) {
@@ -248,7 +250,7 @@ router.delete('/history/:id', (req, res) => {
     }
 });
 
-router.delete('/available/:id', async (req, res) => {
+router.delete('/available/:id', validateUUID, async (req, res) => {
     try {
         const backup = db.prepare('SELECT * FROM available_backups WHERE id = ?').get(req.params.id);
         if (!backup) {

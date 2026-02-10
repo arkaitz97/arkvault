@@ -244,7 +244,7 @@ export default function Settings() {
             </div>
 
             <div className="settings-actions">
-                <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                <button className="btn btn-primary" onClick={handleSave} disabled={saving} data-testid="save-settings-button">
                     {saving ? <Loader2 className="spinner" size={18} /> : <Save size={18} />}
                     Save Settings
                 </button>

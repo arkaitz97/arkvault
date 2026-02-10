@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import logger from '../logger.js';
 import { calculateNextRun } from '../utils.js';
+import { validateJobCreation, validateUUID } from '../middleware/validation-middleware.js';
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.get('/', (req, res) => {
     }
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUUID, (req, res) => {
     try {
         const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.id);
         if (!job) {
@@ -44,7 +45,7 @@ router.get('/:id', (req, res) => {
     }
 });
 
-router.post('/', (req, res) => {
+router.post('/', validateJobCreation, (req, res) => {
     try {
         const {
             name,
@@ -95,7 +96,7 @@ router.post('/', (req, res) => {
     }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUUID, validateJobCreation, (req, res) => {
     try {
         const {
             name,
@@ -167,7 +168,7 @@ router.put('/:id', (req, res) => {
     }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUUID, (req, res) => {
     try {
         const result = db.prepare('DELETE FROM jobs WHERE id = ?').run(req.params.id);
         if (result.changes === 0) {
@@ -182,7 +183,7 @@ router.delete('/:id', (req, res) => {
     }
 });
 
-router.post('/:id/toggle', (req, res) => {
+router.post('/:id/toggle', validateUUID, (req, res) => {
     try {
         const job = db.prepare('SELECT status FROM jobs WHERE id = ?').get(req.params.id);
         if (!job) {

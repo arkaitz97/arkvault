@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { connectorsAPI } from '../../../src/api';
 
-// Mock fetch
 global.fetch = vi.fn(() =>
     Promise.resolve({
         ok: true,

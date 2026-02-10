@@ -76,14 +76,14 @@ test.describe('NFS Connector Workflow', () => {
         await page.goto('/connectors');
 
         // Add Source
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
         await page.locator('.input-group').filter({ hasText: 'Connector Name' }).locator('input').fill(`Local-Source-NFS-${timestamp}`);
         await page.locator('.input-group').filter({ hasText: 'Folder Path' }).locator('input').fill(SOURCE_DIR);
         await page.locator('.modal-footer').getByRole('button', { name: /Add Connector/i }).click();
 
         // Add NFS Destination using Container IP
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'NFS Share' }).click();
         await page.locator('.input-group').filter({ hasText: 'Connector Name' }).locator('input').fill(`NFS-Dest-${timestamp}`);
 

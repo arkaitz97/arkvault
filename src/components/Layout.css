@@ -117,9 +117,7 @@
         position: absolute;
         inset: 0;
         background: rgba(0, 0, 0, 0.2);
-        /* dimming */
         backdrop-filter: grayscale(100%);
-        /* industrial focus */
         opacity: 0;
         transition: opacity var(--transition-normal);
     }

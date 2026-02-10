@@ -23,20 +23,20 @@ test.describe('Backup Options Workflow', () => {
     });
 
     test('should support tar format and incremental backups', async ({ page }) => {
-        test.setTimeout(120000);
+        test.setTimeout(60000);
 
         // 1. Create Connectors
         await page.goto('/connectors');
 
         // Source
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
         await page.fill('input[placeholder="e.g., Production Database"]', `Src-Opt-${timestamp}`);
         await page.fill('input[placeholder="/path/to/folder"]', SOURCE_DIR);
         await page.locator('.modal-footer').getByRole('button', { name: /Add Connector/i }).click();
 
         // Destination
-        await page.locator('header').getByRole('button', { name: /Add Connector/i }).click();
+        await page.locator('.actions-toolbar').getByRole('button', { name: /Add Connector/i }).click();
         await page.locator('.type-option').filter({ hasText: 'Local Folder' }).click();
         await page.fill('input[placeholder="e.g., Production Database"]', `Dst-Opt-${timestamp}`);
         await page.fill('input[placeholder="/path/to/folder"]', DEST_DIR);
@@ -86,7 +86,11 @@ test.describe('Backup Options Workflow', () => {
         const incValue = page.locator('.review-item').filter({ hasText: 'Incremental:' }).locator('.review-value');
         await expect(incValue).toHaveText('Enabled');
 
-        await page.click('button:has-text("Create Backup Job")');
+        // Wait for API response
+        const [response] = await Promise.all([
+            page.click('button:has-text("Create Backup Job")'),
+            page.waitForResponse(resp => resp.url().includes('/api/jobs') && resp.status() === 200)
+        ]);
 
         // 3. Run First Backup (Full)
         await expect(page).toHaveURL(/\/jobs/);

@@ -21,7 +21,10 @@
     "s3:stop": "docker stop arkvault-minio && docker rm arkvault-minio",
     "nfs:start": "docker run -d --privileged --name arkvault-nfs -v /tmp/nfs-share:/nfsshare -e SHARED_DIRECTORY=/nfsshare -p 22049:2049 itsthenetwork/nfs-server-alpine:latest",
     "nfs:stop": "docker rm -f arkvault-nfs || true",
-    "db:reset": "node scripts/reset-auth.js"
+    "db:reset": "node scripts/reset-auth.js",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "security:update": "npm update"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
@@ -32,8 +35,11 @@
     "cors": "^2.8.6",
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "express-session": "^1.19.0",
+    "express-validator": "^7.3.1",
     "googleapis": "^171.0.0",
+    "helmet": "^8.1.0",
     "lucide-react": "^0.563.0",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",

@@ -24,7 +24,7 @@
     width: 32px;
     height: 32px;
     border-radius: var(--radius-sm);
-    /* Square/Sharp */
+    border-radius: var(--radius-sm);
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     display: flex;
@@ -73,8 +73,6 @@
     font-family: var(--font-mono);
     font-size: 0.65rem;
     color: var(--text-muted);
-    display: none;
-    /* Simplify for cleaner look */
 }
 
 .step-connector {
@@ -148,7 +146,7 @@
 .connector-type-card.selected {
     border-color: var(--accent-primary);
     background: var(--bg-tertiary);
-    /* Keep it clean */
+    background: var(--bg-tertiary);
     box-shadow: 0 0 0 2px var(--accent-primary);
 }
 
@@ -167,7 +165,7 @@
 
 .connector-config {
     background: var(--bg-primary);
-    /* inset look */
+    background: var(--bg-primary);
     border: 1px solid var(--border-color);
     padding: var(--spacing-lg);
 }
@@ -320,7 +318,7 @@
     height: 14px;
     background: var(--text-muted);
     border-radius: 0;
-    /* Square toggle */
+    border-radius: 0;
     transition: all var(--transition-fast);
 }
 

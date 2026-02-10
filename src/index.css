@@ -1,27 +1,14 @@
 :root {
-  /* 
-   * RETRO-MODERN INDUSTRIAL THEME
-   * Inspired by Teenage Engineering
-   */
 
-  /* Base Chassis Colors */
   --bg-primary: #e3e3e3;
-  /* Main background - The "Chassis" */
   --bg-secondary: #f2f2f2;
-  /* Secondary backgrounds / Cards */
   --bg-tertiary: #ffffff;
-  /* Inputs / Elevating */
   --bg-elevated: #d1d1d1;
-  /* Pressed states / Sidebar */
 
-  /* Accents */
   --accent-primary: #ff4d00;
-  /* Safety Orange - Main Action */
   --accent-primary-hover: #e64500;
   --accent-secondary: #000000;
-  /* Industrial Black */
 
-  /* Status Colors (High Contrast) */
   --success: #00a000;
   --success-bg: #ccffcc;
   --warning: #ffcc00;
@@ -31,32 +18,24 @@
   --info: #0055ff;
   --info-bg: #cceeff;
 
-  /* Typography */
   --text-primary: #111111;
   --text-secondary: #555555;
   --text-muted: #888888;
   --font-sans: 'Inter', -apple-system, sans-serif;
-  /* Fallback / Body */
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  /* Headers & UI */
 
-  /* Borders & Shapes */
   --border-color: #111111;
-  /* Stark black borders */
   --border-color-hover: #ff4d00;
-  /* Active border */
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 6px;
   --radius-xl: 12px;
   --radius-full: 9999px;
 
-  /* Shadows (Hard, non-blurred usually) */
   --shadow-sm: 2px 2px 0px rgba(0, 0, 0, 0.1);
   --shadow-md: 4px 4px 0px rgba(0, 0, 0, 0.15);
   --shadow-lg: 8px 8px 0px rgba(0, 0, 0, 0.1);
   --shadow-glow: none;
-  /* Removed glow for industrial look */
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -66,12 +45,9 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
 
-  /* Transitions */
   --transition-fast: 100ms ease-out;
-  /* Snappy */
   --transition-normal: 200ms ease-out;
 
-  /* Layout */
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 80px;
 }

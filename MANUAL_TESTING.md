@@ -258,7 +258,35 @@ This guide outlines the steps to manually test all features of the ArkVault appl
 ---
 
 ## 9. Error Handling (Edge Cases)
-- **Scenario: Connector Unreachable**
-    1. Create a job with a path that doesn't exist (if validation allows) or delete the folder on disk.
     2. Run the job.
     3. **Verify**: Job status becomes "Failed". Error log in History explains the issue.
+
+---
+
+## 10. Security Testing
+
+### 10.1 Rate Limiting
+- **Scenario: Brute Force Protection (Login)**
+    1. Navigate to `/login`.
+    2. Enter incorrect credentials 6 times in a row within 15 minutes.
+    3. **Verify**: On the 6th attempt, the server returns 429 Too Many Requests with an error message: "Too many authentication attempts. Please try again later."
+- **Scenario: API Rate Limiting**
+    1. Rapildy refresh the Dashboard or Connectors page.
+    2. **Verify**: The application remains responsive until a high threshold (100 requests) is hit, after which it should throttle.
+
+### 10.2 Path Traversal Prevention
+- **Scenario: Malicious Connector Path**
+    1. Navigate to **Connectors** -> **Add Connector**.
+    2. Try to save a path like `../../etc/passwd` or `/home/user/../../etc/shadow`.
+    3. **Verify**: The UI or Backend returns a validation error indicating an invalid path.
+
+### 10.3 Security Headers
+- **Scenario: Verify Headers (Inspector)**
+    1. Open Browser DevTools (F12) -> **Network** tab.
+    2. Refresh the page.
+    3. Click on the main document request.
+    4. **Verify** Response Headers:
+        - `Content-Security-Policy` is present.
+        - `Strict-Transport-Security` is present.
+        - `X-Frame-Options: DENY` is present.
+        - `X-Content-Type-Options: nosniff` is present.

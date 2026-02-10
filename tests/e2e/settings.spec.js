@@ -22,7 +22,7 @@ test.describe('Settings Page', () => {
     });
 
     test('should have save button', async ({ page }) => {
-        await expect(page.getByRole('button', { name: /Save Settings/i })).toBeVisible();
+        await expect(page.getByTestId('save-settings-button')).toBeVisible();
     });
 
     test('should have retention input', async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe('ArkVault Branding', () => {
 
     test('should navigate to settings from sidebar', async ({ page }) => {
         await page.goto('/');
-        await page.getByRole('link', { name: /Settings/i }).click();
+        await page.getByTestId('settings-nav-link').click();
         await expect(page).toHaveURL(/\/settings/);
         await expect(page.getByRole('heading', { name: /Settings/i })).toBeVisible();
     });
