@@ -25,10 +25,14 @@ ArkVault simplifies your backup strategy with a unified interface for Local, NFS
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Production Deployment
+
+For production environments, please refer to our comprehensive **[Deployment Guide](DEPLOYMENT.md)**.
+
+### Quick Start (Local)
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Access the app at `http://localhost:5173`
