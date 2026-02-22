@@ -17,6 +17,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:coverage": "cross-env VITE_COVERAGE=true playwright test && nyc report --reporter=html --reporter=text",
     "s3:start": "docker run -d --name arkvault-minio -p 9000:9000 -p 9001:9001 -e \"MINIO_ROOT_USER=minioadmin\" -e \"MINIO_ROOT_PASSWORD=minioadmin\" minio/minio server /data --console-address \":9001\"",
     "s3:stop": "docker stop arkvault-minio && docker rm arkvault-minio",
     "nfs:start": "docker run -d --privileged --name arkvault-nfs -v /tmp/nfs-share:/nfsshare -e SHARED_DIRECTORY=/nfsshare -p 22049:2049 itsthenetwork/nfs-server-alpine:latest",
@@ -62,13 +63,20 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-report": "^3.0.1",
+    "istanbul-reports": "^3.2.0",
     "jsdom": "^28.0.0",
+    "nyc": "^17.1.0",
     "supertest": "^7.2.2",
     "vite": "^7.2.4",
+    "vite-plugin-istanbul": "^7.2.1",
     "vitest": "^4.0.18"
   }
 }

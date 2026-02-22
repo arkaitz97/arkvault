@@ -28,11 +28,14 @@ playwright-report/
 test-results/
 test_results.txt
 coverage/
+.nyc_output/
 tests/e2e/playwright/
 backups/
 
 # Databases
 *.db
+*.db-wal
+*.db-shm
 
 # Environment variables
 .env

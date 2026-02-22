@@ -11,6 +11,7 @@ const stat = promisify(fs.stat);
 const mkdir = promisify(fs.mkdir);
 const rm = promisify(fs.rm);
 
+
 class GDriveConnector {
     getAuth(config) {
         let credentials;
@@ -25,12 +26,73 @@ class GDriveConnector {
             credentials = config.serviceAccountKey;
         }
 
-        const auth = new google.auth.GoogleAuth({
+        const authOptions = {
             credentials,
             scopes: ['https://www.googleapis.com/auth/drive']
-        });
+        };
+
+        // Allow overriding the root URL for testing
+        if (process.env.GOOGLE_API_ROOT_URL) {
+            authOptions.clientOptions = {
+                rootUrl: process.env.GOOGLE_API_ROOT_URL
+            };
+        }
+
+        const auth = new google.auth.GoogleAuth(authOptions);
 
         return auth;
+    }
+
+    getDrive(config) {
+        if (process.env.GOOGLE_API_ROOT_URL) {
+            logger.info({ rootUrl: process.env.GOOGLE_API_ROOT_URL }, 'GDriveConnector using mock API root');
+            // Return a mock-compatible drive object that doesn't trigger real OAuth signing
+            return {
+                about: {
+                    get: async () => ({ data: { user: { displayName: 'Mock User' } } })
+                },
+                files: {
+                    list: async (params) => {
+                        const response = await fetch(`${process.env.GOOGLE_API_ROOT_URL}drive/v3/files`);
+                        return { data: await response.json() };
+                    },
+                    get: async (params) => {
+                        const { fileId, alt } = params;
+                        const url = `${process.env.GOOGLE_API_ROOT_URL}drive/v3/files/${fileId}${alt === 'media' ? '?alt=media' : ''}`;
+                        const response = await fetch(url);
+                        if (alt === 'media') {
+                            return { data: response.body };
+                        }
+                        return { data: await response.json() };
+                    },
+                    create: async (params) => {
+                        const { requestBody, media } = params;
+                        const formData = new FormData();
+                        formData.append('metadata', JSON.stringify(requestBody));
+
+                        if (media && media.body) {
+                            const chunks = [];
+                            for await (const chunk of media.body) {
+                                chunks.push(chunk);
+                            }
+                            const buffer = Buffer.concat(chunks);
+                            formData.append('body', new Blob([buffer]), requestBody.name || 'upload.bin');
+                        }
+
+                        const response = await fetch(`${process.env.GOOGLE_API_ROOT_URL}upload/drive/v3/files`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        return { data };
+                    }
+                }
+            };
+        }
+
+        const auth = this.getAuth(config);
+        const driveOptions = { version: 'v3', auth };
+        return google.drive(driveOptions);
     }
 
     async testConnection(config) {
@@ -152,8 +214,7 @@ class GDriveConnector {
     }
 
     async download(location, config) {
-        const auth = this.getAuth(config);
-        const drive = google.drive({ version: 'v3', auth });
+        const drive = this.getDrive(config);
 
         const match = location.match(/^gdrive:\/\/(.+)$/);
         if (!match) {

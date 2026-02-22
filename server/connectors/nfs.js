@@ -60,7 +60,6 @@ class NFSConnector {
             await execAsync(`sudo umount "${mountPoint}"`, { timeout: 10000 });
             await rm(mountPoint, { recursive: true, force: true });
         } catch {
-            // ignore unmount errors
         }
     }
 
@@ -89,7 +88,6 @@ class NFSConnector {
             logger.info({ host: config.host, path: config.path, size: result.size }, 'NFS backup completed');
             return result;
         } finally {
-            // cleanup not required
         }
     }
 

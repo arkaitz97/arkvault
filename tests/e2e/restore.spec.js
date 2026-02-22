@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './coverage-fixture.js';
 
 test.describe('Restore Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -10,7 +10,6 @@ test.describe('Restore Page', () => {
     });
 
     test('should show available backups section', async ({ page }) => {
-        // The h2 heading says "Available Backups"
         await expect(page.locator('h2').filter({ hasText: /Available Backups/i })).toBeVisible();
     });
 
@@ -19,7 +18,6 @@ test.describe('Restore Page', () => {
     });
 
     test('should show restore panel with instructions', async ({ page }) => {
-        // Should show "Select a Backup" message when nothing selected
         await expect(page.getByText(/Select a Backup/i)).toBeVisible();
     });
 });
@@ -34,7 +32,6 @@ test.describe('History Page', () => {
     });
 
     test('should show stats bar', async ({ page }) => {
-        // Stats bar contains "Total Backups" stat
         await expect(page.locator('.stats-bar')).toBeVisible();
     });
 

@@ -8,6 +8,8 @@ const __dirname = dirname(__filename);
 const dbPath = process.env.DATABASE_PATH || join(__dirname, 'arkvault.db');
 const db = new Database(dbPath);
 
+db.pragma('journal_mode = WAL');
+db.pragma('busy_timeout = 5000');
 db.pragma('foreign_keys = ON');
 
 db.exec(`

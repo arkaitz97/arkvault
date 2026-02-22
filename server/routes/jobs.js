@@ -151,6 +151,7 @@ router.put('/:id', validateUUID, validateJobCreation, (req, res) => {
             req.params.id
         );
 
+        const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.id);
         if (!job) {
             logger.warn({ jobId: req.params.id }, 'Job not found for update');
             return res.status(404).json({ error: 'Job not found' });

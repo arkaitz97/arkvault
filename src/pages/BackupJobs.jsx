@@ -156,6 +156,7 @@ export default function BackupJobs() {
             const scheduleDescription = editingJob.schedulePreset === 'custom' ? 'Custom schedule' : selectedSchedule?.description;
 
             await jobsAPI.update(editingJob.id, {
+                ...editingJob,
                 name: editingJob.name,
                 schedule,
                 schedule_description: scheduleDescription,

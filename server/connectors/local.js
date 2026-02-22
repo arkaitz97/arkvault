@@ -79,10 +79,8 @@ class LocalConnector {
                 fileStats.fileCount = files.length;
                 for (const file of files) {
                     archive.file(file.fullPath, { name: file.relativePath });
-                    fileStats.totalSize += file.size; // Accumulate size
+                    fileStats.totalSize += file.size;
                 }
-                // If no files changed, we still create an empty backup or should we?
-                // An empty zip/tar is valid.
             } else {
                 archive.directory(sourcePath, false);
                 fileStats = await this.getDirectoryStats(sourcePath);
@@ -154,7 +152,6 @@ class LocalConnector {
     }
 
     async download(location, _config) {
-        // For local connector, download does nothing but confirm existence/path
         return {
             path: location,
             isFile: true

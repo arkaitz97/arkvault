@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './coverage-fixture.js';
 
 test.describe('Dashboard Page', () => {
     test.beforeEach(async ({ page }) => {

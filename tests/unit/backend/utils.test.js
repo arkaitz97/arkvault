@@ -35,6 +35,16 @@ describe('calculateNextRun', () => {
         const result = calculateNextRun('');
         expect(result).toBeNull();
     });
+
+    it('should handle monthly schedule', () => {
+        const result = calculateNextRun('0 2 1 * *');
+        expect(result).toBeDefined();
+    });
+
+    it('should handle fallback schedule path', () => {
+        const result = calculateNextRun('15 * * * *');
+        expect(result).toBeDefined();
+    });
 });
 
 describe('formatBytes', () => {

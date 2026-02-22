@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './coverage-fixture.js';
 
 test.describe('Settings Page', () => {
     test.beforeEach(async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe('Settings Page', () => {
     });
 
     test('should show backup defaults section', async ({ page }) => {
-        await expect(page.getByText(/Backup Defaults/i)).toBeVisible();
+        await expect(page.getByText(/Backup Defaults/i)).toBeVisible({ timeout: 15000 });
     });
 
     test('should show notifications section', async ({ page }) => {

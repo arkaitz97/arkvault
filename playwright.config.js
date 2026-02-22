@@ -42,7 +42,8 @@ export default defineConfig({
             reuseExistingServer: !process.env.CI,
             timeout: 30000,
             env: {
-                NODE_ENV: 'test'
+                NODE_ENV: 'test',
+                GOOGLE_API_ROOT_URL: process.env.GOOGLE_API_ROOT_URL || 'http://localhost:9999/'
             }
         },
         {

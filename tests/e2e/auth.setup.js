@@ -1,4 +1,4 @@
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect } from './coverage-fixture.js';
 import { execSync } from 'child_process';
 
 const authFile = 'tests/e2e/playwright/.auth/user.json';

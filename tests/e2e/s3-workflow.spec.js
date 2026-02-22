@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './coverage-fixture.js';
 import { S3Client, CreateBucketCommand, ListObjectsCommand } from '@aws-sdk/client-s3';
 import { execSync } from 'child_process';
 import fs from 'fs';
