@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -8,8 +9,10 @@ import session from 'express-session';
 import authRouter from './routes/auth.js';
 import connectorsRouter from './routes/connectors.js';
 import jobsRouter from './routes/jobs.js';
-import backupsRouter from './routes/backups.js';
+import backupsRouter, { cleanupExpiredBackups } from './routes/backups.js';
 import settingsRouter from './routes/settings.js';
+import usersRouter from './routes/users.js';
+import tokensRouter from './routes/tokens.js';
 import pinoHttp from 'pino-http';
 import logger from './logger.js';
 import db from './db.js';
@@ -22,6 +25,7 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const INTERNAL_TRIGGER_SECRET = process.env.INTERNAL_TRIGGER_SECRET || 'arkvault-internal-trigger-change-me';
 
 configureHelmet(app);
 
@@ -67,12 +71,34 @@ app.use('/api', (req, res, next) => {
         return next();
     }
 
+    if (req.method === 'POST' && req.path.startsWith('/backups/run/') && req.get('x-internal-trigger') === INTERNAL_TRIGGER_SECRET) {
+        return next();
+    }
+
+    const authHeader = req.get('authorization') || '';
+    if (authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7).trim();
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const row = db.prepare('SELECT id, name, scopes FROM api_tokens WHERE token_hash = ? AND revoked = 0').get(tokenHash);
+        if (row) {
+            req.session.authenticated = true;
+            req.session.role = 'operator';
+            req.session.username = 'api:' + (row.name || 'token');
+            req.tokenScopes = JSON.parse(row.scopes || '[]');
+            return next();
+        }
+    }
+
     if (!req.session.authenticated) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
     if (req.session.mustChangePassword && req.path !== '/auth/change-password') {
         return res.status(403).json({ error: 'Must change password', code: 'MUST_CHANGE_PASSWORD' });
+    }
+
+    if (req.session.role === 'viewer' && req.method !== 'GET' && !req.path.startsWith('/auth/')) {
+        return res.status(403).json({ error: 'Forbidden' });
     }
 
     next();
@@ -82,6 +108,8 @@ app.use('/api/connectors', connectorsRouter);
 app.use('/api/jobs', jobsRouter);
 app.use('/api/backups', backupsRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/tokens', tokensRouter);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -110,7 +138,8 @@ function scheduleJob(job) {
             logger.info({ jobId: job.id, jobName: job.name }, 'Running scheduled backup');
             try {
                 const response = await fetch(`http://localhost:${PORT}/api/backups/run/${job.id}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: { 'x-internal-trigger': INTERNAL_TRIGGER_SECRET }
                 });
                 const result = await response.json();
                 logger.info({ jobId: job.id, jobName: job.name, result }, 'Backup completed');
@@ -160,6 +189,15 @@ app.listen(PORT, () => {
 
     cron.schedule('* * * * *', () => {
         refreshAllSchedules();
+    });
+
+    cron.schedule('0 3 * * *', async () => {
+        try {
+            const result = await cleanupExpiredBackups();
+            logger.info({ deleted: result.deleted }, 'Scheduled backup cleanup completed');
+        } catch (error) {
+            logger.error({ err: error }, 'Scheduled backup cleanup failed');
+        }
     });
 });
 

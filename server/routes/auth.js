@@ -8,29 +8,46 @@ import { validateLogin, validateChangePassword } from '../middleware/validation-
 const router = express.Router();
 
 router.post('/login', authRateLimiter, validateLogin, async (req, res) => {
-    const { password } = req.body;
+    const { username, password } = req.body;
     logger.info('Login attempt received');
+
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required' });
+    }
 
     if (!password) {
         return res.status(400).json({ error: 'Password is required' });
     }
 
     try {
-        const authSettings = db.prepare('SELECT password_hash, must_change_password FROM auth_settings WHERE id = 1').get();
+        const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 
-        const match = await bcrypt.compare(password, authSettings.password_hash);
+        if (!user) {
+            logger.warn('Login failed: Invalid password');
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        const match = await bcrypt.compare(password, user.password_hash);
         logger.debug({
             match,
-            hashStart: authSettings.password_hash.substring(0, 10)
+            hashStart: user.password_hash.substring(0, 10)
         }, 'Password match result');
 
         if (match) {
             req.session.authenticated = true;
-            req.session.mustChangePassword = !!authSettings.must_change_password;
+            req.session.userId = user.id;
+            req.session.username = user.username;
+            req.session.role = user.role;
+            req.session.mustChangePassword = !!user.must_change_password;
             logger.info({ session: req.session }, 'Login successful');
             return res.json({
                 authenticated: true,
-                mustChangePassword: !!authSettings.must_change_password
+                mustChangePassword: !!user.must_change_password,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    role: user.role
+                }
             });
         } else {
             logger.warn('Login failed: Invalid password');
@@ -62,7 +79,11 @@ router.get('/status', (req, res) => {
     if (req.session.authenticated) {
         res.json({
             authenticated: true,
-            mustChangePassword: req.session.mustChangePassword
+            mustChangePassword: req.session.mustChangePassword,
+            user: {
+                username: req.session.username,
+                role: req.session.role
+            }
         });
     } else {
         res.json({ authenticated: false });
@@ -80,7 +101,7 @@ router.post('/change-password', authRateLimiter, validateChangePassword, async (
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        db.prepare('UPDATE auth_settings SET password_hash = ?, must_change_password = 0, updated_at = CURRENT_TIMESTAMP WHERE id = 1').run(hashedPassword);
+        db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(hashedPassword, req.session.userId);
 
         req.session.mustChangePassword = false;
 

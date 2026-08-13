@@ -17,7 +17,8 @@ test.describe('Authentication Flow', () => {
         await expect(page).toHaveURL(/.*\/login/);
         await expect(page.locator('h1')).toContainText('ArkVault');
 
-        // 2. Login with default password
+        // 2. Login with default username/password
+        await page.fill('input#username', 'admin');
         await page.fill('input[type="password"]', 'admin123');
         await page.click('button[type="submit"]');
 
@@ -45,6 +46,7 @@ test.describe('Authentication Flow', () => {
 
     test('should fail with invalid password', async ({ page }) => {
         await page.goto('/login');
+        await page.fill('input#username', 'admin');
         await page.fill('input[type="password"]', 'wrongpassword');
         await page.click('button[type="submit"]');
 
@@ -55,6 +57,7 @@ test.describe('Authentication Flow', () => {
     test('should fail if passwords do not match during change', async ({ page }) => {
         // Login first
         await page.goto('/login');
+        await page.fill('input#username', 'admin');
         await page.fill('input[type="password"]', 'admin123');
         await page.click('button[type="submit"]');
         await expect(page).toHaveURL(/.*\/change-password/);

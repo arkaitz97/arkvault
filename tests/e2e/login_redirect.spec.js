@@ -14,6 +14,7 @@ test.describe('Login Redirection', () => {
     test('should redirect to dashboard after successful login for existing user', async ({ page }) => {
         // 1. Initial Setup: Login and change password to be "established"
         await page.goto('/login');
+        await page.fill('input#username', 'admin');
         await page.fill('input[type="password"]', 'admin123');
         await page.click('button[type="submit"]');
 
@@ -33,6 +34,7 @@ test.describe('Login Redirection', () => {
         await expect(page).toHaveURL(/.*\/login/);
 
         // 3. Login again - THIS IS THE CASE TO FIX
+        await page.fill('input#username', 'admin');
         await page.fill('input[type="password"]', 'securePassword123');
         await page.click('button[type="submit"]');
 

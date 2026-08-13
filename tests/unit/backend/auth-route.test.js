@@ -45,31 +45,51 @@ describe('Auth Routes', () => {
     });
 
     describe('POST /login', () => {
-        it('should require password in body', async () => {
-            const res = await request(app).post('/api/auth/login').send({});
+        it('should require username in body', async () => {
+            const res = await request(app).post('/api/auth/login').send({ password: 'admin123' });
             expect(res.status).toBe(400);
+            expect(res.body.error).toBe('Username is required');
+        });
+
+        it('should require password in body', async () => {
+            const res = await request(app).post('/api/auth/login').send({ username: 'admin' });
+            expect(res.status).toBe(400);
+            expect(res.body.error).toBe('Password is required');
         });
 
         it('should login successfully', async () => {
             db.prepare.mockReturnValueOnce({
-                get: vi.fn(() => ({ password_hash: 'hash', must_change_password: 1 }))
+                get: vi.fn(() => ({ id: '1', username: 'admin', role: 'admin', password_hash: 'hash', must_change_password: 1 }))
             });
             bcrypt.compare.mockResolvedValueOnce(true);
 
-            const res = await request(app).post('/api/auth/login').send({ password: 'pw' });
+            const res = await request(app).post('/api/auth/login').send({ username: 'admin', password: 'admin123' });
 
             expect(res.status).toBe(200);
             expect(res.body.authenticated).toBe(true);
             expect(res.body.mustChangePassword).toBe(true);
+            expect(res.body.user.username).toBe('admin');
+            expect(res.body.user.role).toBe('admin');
         });
 
         it('should reject invalid password', async () => {
             db.prepare.mockReturnValueOnce({
-                get: vi.fn(() => ({ password_hash: 'hash', must_change_password: 0 }))
+                get: vi.fn(() => ({ id: '1', username: 'admin', role: 'admin', password_hash: 'hash', must_change_password: 0 }))
             });
             bcrypt.compare.mockResolvedValueOnce(false);
 
-            const res = await request(app).post('/api/auth/login').send({ password: 'pw' });
+            const res = await request(app).post('/api/auth/login').send({ username: 'admin', password: 'wrong' });
+
+            expect(res.status).toBe(401);
+            expect(res.body.error).toBe('Invalid password');
+        });
+
+        it('should reject unknown username', async () => {
+            db.prepare.mockReturnValueOnce({
+                get: vi.fn(() => undefined)
+            });
+
+            const res = await request(app).post('/api/auth/login').send({ username: 'nope', password: 'whatever' });
 
             expect(res.status).toBe(401);
             expect(res.body.error).toBe('Invalid password');
@@ -80,7 +100,7 @@ describe('Auth Routes', () => {
                 get: vi.fn(() => { throw new Error('DB Error'); })
             });
 
-            const res = await request(app).post('/api/auth/login').send({ password: 'pw' });
+            const res = await request(app).post('/api/auth/login').send({ username: 'admin', password: 'admin123' });
             expect(res.status).toBe(500);
             expect(res.body.error).toBe('Internal server error');
         });
@@ -145,7 +165,7 @@ describe('Auth Routes', () => {
             const authApp = express();
             authApp.use(express.json());
             authApp.use((req, res, next) => {
-                req.session = { authenticated: true };
+                req.session = { authenticated: true, userId: 'user-1' };
                 next();
             });
             authApp.use('/api/auth', authRouter);
@@ -160,7 +180,7 @@ describe('Auth Routes', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
-            expect(runMock).toHaveBeenCalledWith('new-hash');
+            expect(runMock).toHaveBeenCalledWith('new-hash', 'user-1');
         });
 
         it('should handle db error on change password', async () => {

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 async function fetchAPI(endpoint, options = {}) {
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -48,6 +48,7 @@ export const backupsAPI = {
   getHistory: () => fetchAPI('/backups/history'),
   getAvailable: () => fetchAPI('/backups/available'),
   getBackup: (id) => fetchAPI(`/backups/available/${id}`),
+  getContents: (id) => fetchAPI(`/backups/available/${id}/contents`),
   run: (jobId) => fetchAPI(`/backups/run/${jobId}`, { method: 'POST' }),
   restore: (backupId, data) =>
       fetchAPI(`/backups/restore/${backupId}`, {

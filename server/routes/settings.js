@@ -16,7 +16,12 @@ const defaults = {
     defaultCompression: 'true',
     defaultEncryption: 'false',
     notificationsEnabled: 'false',
-    notificationEmail: ''
+    notificationEmail: '',
+    webhookUrl: '',
+    smtpHost: '',
+    smtpPort: '587',
+    smtpUser: '',
+    smtpPass: ''
 };
 
 Object.entries(defaults).forEach(([key, value]) => {
@@ -64,7 +69,7 @@ router.get('/stats', (req, res) => {
     try {
         const totalBackups = db.prepare('SELECT COUNT(*) as count FROM backup_history').get().count;
         const totalSize = db.prepare('SELECT COALESCE(SUM(size), 0) as total FROM backup_history').get().total;
-        const activeJobs = db.prepare('SELECT COUNT(*) as count FROM backup_jobs WHERE is_active = 1').get().count;
+        const activeJobs = db.prepare("SELECT COUNT(*) as count FROM jobs WHERE status = 'active'").get().count;
         const connectors = db.prepare('SELECT COUNT(*) as count FROM connectors').get().count;
 
         res.json({
@@ -89,7 +94,7 @@ router.post('/cleanup', (req, res) => {
 
         const result = db.prepare(`
             DELETE FROM backup_history 
-            WHERE created_at < ? AND status = 'completed'
+            WHERE created_at < ? AND status IN ('success', 'failed')
         `).run(cutoffDate.toISOString());
 
         logger.info({ deleted: result.changes, cutoffDate: cutoffDate.toISOString() }, 'Settings cleanup completed');

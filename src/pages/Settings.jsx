@@ -15,13 +15,16 @@ import { settingsAPI, formatBytes } from '../api';
 import ConfirmationModal from '../components/ConfirmationModal';
 import './Settings.css';
 
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+
 export default function Settings() {
     const [settings, setSettings] = useState({
         defaultRetention: 30,
         defaultCompression: true,
         defaultEncryption: false,
         notificationsEnabled: false,
-        notificationEmail: ''
+        notificationEmail: '',
+        webhookUrl: ''
     });
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -34,6 +37,9 @@ export default function Settings() {
         message: '',
         onConfirm: () => { }
     });
+    const [tokens, setTokens] = useState([]);
+    const [newTokenName, setNewTokenName] = useState('');
+    const [newToken, setNewToken] = useState(null);
 
     const loadSettings = async () => {
         try {
@@ -53,12 +59,59 @@ export default function Settings() {
 
     useEffect(() => {
         loadSettings();
+        loadTokens();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const showMessage = (type, text) => {
         setMessage({ type, text });
         setTimeout(() => setMessage(null), 3000);
+    };
+
+    const loadTokens = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/tokens`, { credentials: 'include' });
+            if (!res.ok) return;
+            const data = await res.json();
+            setTokens(Array.isArray(data) ? data : []);
+        } catch {
+            // ignore
+        }
+    };
+
+    const handleCreateToken = async () => {
+        if (!newTokenName.trim()) return;
+        try {
+            const res = await fetch(`${API_BASE}/tokens`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newTokenName, scopes: [] })
+            });
+            if (!res.ok) {
+                showMessage('error', 'Failed to create token');
+                return;
+            }
+            const data = await res.json();
+            setNewToken(data.token);
+            setNewTokenName('');
+            loadTokens();
+        } catch {
+            showMessage('error', 'Failed to create token');
+        }
+    };
+
+    const handleRevokeToken = async (id) => {
+        try {
+            const res = await fetch(`${API_BASE}/tokens/${id}`, { method: 'DELETE', credentials: 'include' });
+            if (!res.ok) {
+                showMessage('error', 'Failed to revoke token');
+                return;
+            }
+            loadTokens();
+        } catch {
+            showMessage('error', 'Failed to revoke token');
+        }
     };
 
     const handleSave = async () => {
@@ -197,7 +250,17 @@ export default function Settings() {
                             </div>
                         )}
 
-                        <p className="coming-soon">More notification options coming soon</p>
+                        <div className="form-group">
+                            <label htmlFor="webhook">Webhook URL</label>
+                            <input
+                                type="url"
+                                id="webhook"
+                                placeholder="https://example.com/hook"
+                                value={settings.webhookUrl || ''}
+                                onChange={(e) => setSettings({ ...settings, webhookUrl: e.target.value })}
+                            />
+                            <span className="help-text">POST backup status to this URL</span>
+                        </div>
                     </div>
                 </section>
 
@@ -239,6 +302,63 @@ export default function Settings() {
                                 Run Cleanup
                             </button>
                         </div>
+                    </div>
+                </section>
+
+                <section className="settings-card">
+                    <div className="card-header">
+                        <Shield size={20} />
+                        <h2>API Tokens</h2>
+                    </div>
+                    <div className="card-body">
+                        <div className="form-group">
+                            <label htmlFor="token-name">Token Name</label>
+                            <div className="token-create-row">
+                                <input
+                                    type="text"
+                                    id="token-name"
+                                    placeholder="e.g. CI server"
+                                    value={newTokenName}
+                                    onChange={(e) => setNewTokenName(e.target.value)}
+                                />
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={handleCreateToken}
+                                    disabled={!newTokenName.trim()}
+                                >
+                                    Create Token
+                                </button>
+                            </div>
+                        </div>
+
+                        {newToken && (
+                            <div className="form-group">
+                                <label htmlFor="new-token">New Token (copy now — it won't be shown again)</label>
+                                <input type="text" id="new-token" readOnly value={newToken} />
+                            </div>
+                        )}
+
+                        {tokens.length > 0 && (
+                            <ul className="token-list">
+                                {tokens.map((token) => (
+                                    <li key={token.id} className="token-item">
+                                        <div className="token-info">
+                                            <span className="token-name">{token.name}</span>
+                                            <span className="token-meta">
+                                                {token.created_at} {token.revoked ? '— revoked' : ''}
+                                            </span>
+                                        </div>
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => handleRevokeToken(token.id)}
+                                            disabled={token.revoked === 1}
+                                        >
+                                            Revoke
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </section>
             </div>

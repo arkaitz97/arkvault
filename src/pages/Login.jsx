@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { Lock, ShieldCheck, AlertCircle, Loader2, User } from 'lucide-react';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +20,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await login(password);
+      const result = await login(username, password);
       if (!result.success) {
         setError(result.error);
       } else {
@@ -50,16 +51,31 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="password">Admin Password</label>
+            <label htmlFor="username">Username</label>
+            <div className="input-with-icon">
+              <User size={20} className="input-icon" />
+              <input
+                id="username"
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
             <div className="input-with-icon">
               <Lock size={20} className="input-icon" />
               <input
                 id="password"
                 type="password"
-                placeholder="Enter admin password"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoFocus
                 required
               />
             </div>

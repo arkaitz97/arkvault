@@ -24,9 +24,15 @@ vi.mock('../../../server/utils.js', () => ({
     calculateNextRun: vi.fn(() => '2026-02-20T00:00:00.000Z')
 }));
 
-vi.mock('fs/promises', () => ({
-    unlink: vi.fn()
-}));
+vi.mock('fs/promises', () => {
+    const fsMock = {
+        unlink: vi.fn(),
+        readFile: vi.fn(),
+        stat: vi.fn(),
+        rm: vi.fn()
+    };
+    return { ...fsMock, default: fsMock };
+});
 
 vi.mock('../../../server/rate-limit-config.js', () => ({
     downloadRateLimiter: (req, res, next) => next()
@@ -103,6 +109,9 @@ describe('Backups Routes', () => {
                 backup: backupMock,
                 upload: uploadMock
             });
+
+            const fs = await import('fs/promises');
+            fs.readFile.mockResolvedValue(Buffer.from('backup-data'));
 
             const res = await request(app).post('/api/backups/run/1');
             expect(res.status).toBe(200);
@@ -255,8 +264,11 @@ describe('Backups Routes', () => {
             });
 
             connectorsIndex.getConnector.mockReturnValue({
-                download: vi.fn().mockResolvedValue('file-content')
+                download: vi.fn().mockResolvedValue({ path: '/a/file.zip' })
             });
+
+            const fs = await import('fs/promises');
+            fs.readFile.mockResolvedValue(Buffer.from('file-content'));
 
             const res = await request(app).get('/api/backups/download/1');
             expect(res.status).toBe(200);
@@ -273,7 +285,11 @@ describe('Backups Routes', () => {
                 return { get: vi.fn() };
             });
 
-            connectorsIndex.getConnector.mockReturnValue({ download: vi.fn().mockResolvedValue('file-content') });
+            connectorsIndex.getConnector.mockReturnValue({ download: vi.fn().mockResolvedValue({ path: '/a/file.zip' }) });
+
+            const fs = await import('fs/promises');
+            fs.readFile.mockResolvedValue(Buffer.from('file-content'));
+
             const res = await request(app).get('/api/backups/download/1');
             expect(res.status).toBe(200);
         });
@@ -369,18 +385,20 @@ describe('Backups Routes', () => {
 
     describe('DELETE /cleanup', () => {
         it('should cleanup expired backups', async () => {
-            db.prepare.mockReturnValueOnce({
+            db.prepare.mockImplementation(() => ({
+                all: vi.fn().mockReturnValue([]),
                 run: vi.fn().mockReturnValue({ changes: 3 })
-            });
+            }));
             const res = await request(app).delete('/api/backups/cleanup');
             expect(res.status).toBe(200);
             expect(res.body.deleted).toBe(3);
         });
 
         it('should handle db error on cleanup', async () => {
-            db.prepare.mockReturnValueOnce({
+            db.prepare.mockImplementation(() => ({
+                all: vi.fn().mockReturnValue([]),
                 run: vi.fn(() => { throw new Error('DB Error'); })
-            });
+            }));
             const res = await request(app).delete('/api/backups/cleanup');
             expect(res.status).toBe(500);
         });

@@ -73,6 +73,7 @@ db.exec(`
     encrypted INTEGER DEFAULT 0,
     compressed INTEGER DEFAULT 0,
     location TEXT NOT NULL,
+    checksum TEXT,
     expires_at TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
@@ -87,6 +88,34 @@ db.exec(`
 
   INSERT OR IGNORE INTO auth_settings (id, password_hash, must_change_password)
   VALUES (1, '$2b$10$w1QUlPvwXKkY4.Ax2oH1N.z1UzlH2npyT75zSJAL9txWqz.auUWv.', 1);
+
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'admin',
+    must_change_password INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  INSERT OR IGNORE INTO users (id, username, password_hash, role, must_change_password)
+  VALUES ('00000000-0000-0000-0000-000000000001', 'admin', '$2b$10$w1QUlPvwXKkY4.Ax2oH1N.z1UzlH2npyT75zSJAL9txWqz.auUWv.', 'admin', 1);
+
+  CREATE TABLE IF NOT EXISTS api_tokens (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    scopes TEXT DEFAULT '[]',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    revoked INTEGER DEFAULT 0
+  );
 `);
+
+try {
+  db.exec("ALTER TABLE available_backups ADD COLUMN checksum TEXT");
+} catch (e) {
+  // column already exists
+}
 
 export default db;

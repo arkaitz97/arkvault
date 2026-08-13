@@ -16,7 +16,8 @@ setup('authenticate', async ({ page }) => {
     // 1. Visit the app
     await page.goto('/');
 
-    // 2. Login with default password
+    // 2. Login with default username/password
+    await page.fill('input#username', 'admin');
     await page.fill('input[type="password"]', 'admin123');
     await page.click('button[type="submit"]');
 

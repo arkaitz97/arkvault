@@ -9,7 +9,7 @@ const DEFAULT_PASSWORD = 'admin123';
 
 async function resetPassword() {
     const hash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
-    db.prepare('UPDATE auth_settings SET password_hash = ?, must_change_password = 1 WHERE id = 1').run(hash);
+    db.prepare("UPDATE users SET password_hash = ?, must_change_password = 1 WHERE username = 'admin'").run(hash);
 }
 
 describe('Security Features', () => {
@@ -56,7 +56,7 @@ describe('Security Features', () => {
             for (let i = 0; i < 10; i++) {
                 const res = await request(app)
                     .post('/api/auth/login')
-                    .send({ password: 'wrongpassword' });
+                    .send({ username: 'admin', password: 'wrongpassword' });
 
                 expect(res.status).not.toBe(429);
             }
@@ -76,7 +76,7 @@ describe('Security Features', () => {
             agent = request.agent(app);
             await agent
                 .post('/api/auth/login')
-                .send({ password: DEFAULT_PASSWORD });
+                .send({ username: 'admin', password: DEFAULT_PASSWORD });
         });
 
         it('should reject password shorter than 8 characters in test mode', async () => {
@@ -124,7 +124,7 @@ describe('Security Features', () => {
         beforeAll(async () => {
             await resetPassword();
             agent = request.agent(app);
-            await agent.post('/api/auth/login').send({ password: DEFAULT_PASSWORD });
+            await agent.post('/api/auth/login').send({ username: 'admin', password: DEFAULT_PASSWORD });
             await agent.post('/api/auth/change-password').send({
                 newPassword: 'validpass123',
                 confirmPassword: 'validpass123'
@@ -304,7 +304,7 @@ describe('Security Features', () => {
         it('should set httpOnly cookie flag', async () => {
             const res = await request(app)
                 .post('/api/auth/login')
-                .send({ password: 'admin123' });
+                .send({ username: 'admin', password: 'admin123' });
 
             const cookieHeader = res.headers['set-cookie'];
             if (cookieHeader) {
@@ -315,7 +315,7 @@ describe('Security Features', () => {
         it('should set sameSite cookie flag', async () => {
             const res = await request(app)
                 .post('/api/auth/login')
-                .send({ password: 'admin123' });
+                .send({ username: 'admin', password: 'admin123' });
 
             const cookieHeader = res.headers['set-cookie'];
             if (cookieHeader) {
@@ -326,7 +326,7 @@ describe('Security Features', () => {
         it('should use custom session cookie name', async () => {
             const res = await request(app)
                 .post('/api/auth/login')
-                .send({ password: 'admin123' });
+                .send({ username: 'admin', password: 'admin123' });
 
             const cookieHeader = res.headers['set-cookie'];
             if (cookieHeader) {

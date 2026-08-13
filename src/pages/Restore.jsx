@@ -11,7 +11,8 @@ import {
     AlertCircle,
     ArrowRight,
     Loader2,
-    Trash2
+    Trash2,
+    FolderOpen
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { backupsAPI, formatBytes } from '../api';
@@ -42,6 +43,10 @@ export default function Restore() {
         backupId: null,
         jobName: ''
     });
+    const [entries, setEntries] = useState([]);
+    const [selectedEntries, setSelectedEntries] = useState([]);
+    const [showBrowser, setShowBrowser] = useState(false);
+    const [browsing, setBrowsing] = useState(false);
 
     useEffect(() => {
         loadBackups();
@@ -63,6 +68,37 @@ export default function Restore() {
         backup.job_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const loadContents = async () => {
+        if (!selectedBackup) return;
+        setBrowsing(true);
+        try {
+            const data = await backupsAPI.getContents(selectedBackup.id);
+            setEntries(data);
+            setSelectedEntries([]);
+            setShowBrowser(true);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBrowsing(false);
+        }
+    };
+
+    const toggleEntry = (entryPath) => {
+        setSelectedEntries(prev =>
+            prev.includes(entryPath)
+                ? prev.filter(e => e !== entryPath)
+                : [...prev, entryPath]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedEntries.length === entries.length) {
+            setSelectedEntries([]);
+        } else {
+            setSelectedEntries(entries.map(e => e.path));
+        }
+    };
+
     const handleRestore = async () => {
         if (!selectedBackup) return;
 
@@ -74,10 +110,15 @@ export default function Restore() {
                 setRestoreProgress(prev => Math.min(prev + 10, 90));
             }, 500);
 
-            await backupsAPI.restore(selectedBackup.id, {
+            const restoreBody = {
                 destination_type: restoreConfig.destinationType,
                 destination_path: restoreConfig.destinationType === 'local' ? restoreConfig.destinationPath : undefined
-            });
+            };
+            if (selectedEntries.length > 0) {
+                restoreBody.entries = selectedEntries;
+            }
+
+            await backupsAPI.restore(selectedBackup.id, restoreBody);
 
             clearInterval(progressInterval);
             setRestoreProgress(100);
@@ -296,6 +337,56 @@ export default function Restore() {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="detail-section">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={loadContents}
+                                    disabled={browsing}
+                                >
+                                    {browsing ? (
+                                        <Loader2 size={18} className="animate-spin" />
+                                    ) : (
+                                        <FolderOpen size={18} />
+                                    )}
+                                    Browse Files
+                                </button>
+
+                                {showBrowser && (
+                                    <div style={{ marginTop: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="select-all-entries"
+                                                checked={entries.length > 0 && selectedEntries.length === entries.length}
+                                                onChange={toggleSelectAll}
+                                            />
+                                            <label htmlFor="select-all-entries" style={{ fontSize: '0.85rem' }}>
+                                                Select All
+                                            </label>
+                                        </div>
+                                        <div className="entry-list" style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '4px', padding: '0.5rem' }}>
+                                            {entries.length === 0 ? (
+                                                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No files found</p>
+                                            ) : (
+                                                entries.map((entry) => (
+                                                    <label
+                                                        key={entry.path}
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0', fontSize: '0.85rem', cursor: 'pointer' }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedEntries.includes(entry.path)}
+                                                            onChange={() => toggleEntry(entry.path)}
+                                                        />
+                                                        <span>{entry.path}</span>
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="restore-warning">
