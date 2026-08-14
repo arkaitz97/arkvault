@@ -77,11 +77,11 @@ export const validateJobCreation = [
         .withMessage('Retention must be between 1 and 3650 days'),
     body('source_type')
         .isString()
-        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs'])
+        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs', 'ssh'])
         .withMessage('Invalid source type'),
     body('destination_type')
         .isString()
-        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs'])
+        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs', 'ssh'])
         .withMessage('Invalid destination type'),
     body('format')
         .optional()
@@ -94,7 +94,7 @@ export const validateJobCreation = [
 export const validateConnectorCreation = [
     body('type')
         .isString()
-        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs'])
+        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs', 'ssh'])
         .withMessage('Invalid connector type'),
     body('name')
         .isString()
@@ -132,7 +132,7 @@ export const validateUUID = [
 export const validateRestoreRequest = [
     body('destination_type')
         .isString()
-        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs'])
+        .isIn(['local', 's3', 'gdrive', 'postgresql', 'nfs', 'ssh'])
         .withMessage('Invalid destination type'),
     body('destination_path')
         .isString()

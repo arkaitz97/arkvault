@@ -3,9 +3,11 @@ import path from 'path';
 import os from 'os';
 import { promisify } from 'util';
 import archiver from 'archiver';
+import * as tar from 'tar';
 import { createWriteStream, createReadStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import { Extract } from 'unzipper';
+import { isTarArchive } from '../utils/archive.js';
 import logger from '../logger.js';
 
 const stat = promisify(fs.stat);
@@ -165,23 +167,33 @@ class LocalConnector {
 
         await mkdir(destPath, { recursive: true });
 
-        await pipeline(
-            createReadStream(backupData.path),
-            Extract({ path: destPath })
-        );
+        let filesRestored = 0;
+        if (await isTarArchive(backupData.path)) {
+            await tar.x({
+                file: backupData.path,
+                cwd: destPath,
+                onentry: (entry) => { if (entry.type === 'File') filesRestored++; }
+            });
+        } else {
+            await pipeline(
+                createReadStream(backupData.path),
+                Extract({ path: destPath })
+            );
+            const stats = await this.getDirectoryStats(destPath);
+            filesRestored = stats.fileCount;
+        }
 
-        const stats = await this.getDirectoryStats(destPath);
         const duration = Date.now() - start;
 
         logger.info({
             destPath,
-            filesRestored: stats.fileCount,
+            filesRestored,
             durationMs: duration
         }, 'Local restore completed');
 
         return {
             success: true,
-            filesRestored: stats.fileCount
+            filesRestored
         };
     }
 

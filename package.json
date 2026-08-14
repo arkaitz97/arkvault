@@ -23,6 +23,7 @@
     "nfs:start": "docker run -d --privileged --name arkvault-nfs -v /tmp/nfs-share:/nfsshare -e SHARED_DIRECTORY=/nfsshare -p 22049:2049 itsthenetwork/nfs-server-alpine:latest",
     "nfs:stop": "docker rm -f arkvault-nfs || true",
     "db:reset": "node scripts/reset-auth.js",
+    "db:reset:full": "node scripts/reset-db.js",
     "security:audit": "npm audit",
     "security:fix": "npm audit fix",
     "security:update": "npm update"
@@ -52,6 +53,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
+    "ssh2": "^1.17.0",
+    "tar": "^7.5.22",
     "unzipper": "^0.12.3",
     "uuid": "^13.0.0"
   },

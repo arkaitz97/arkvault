@@ -9,6 +9,7 @@ import {
     Cloud,
     CloudCog,
     Database,
+    Server,
     Clock,
     Shield,
     Archive,
@@ -32,6 +33,7 @@ const getIcon = (type) => {
         case 's3': return Cloud;
         case 'gdrive': return CloudCog;
         case 'postgresql': return Database;
+        case 'ssh': return Server;
         default: return HardDrive;
     }
 };
@@ -190,7 +192,8 @@ export default function CreateBackup() {
                                 {type.id === 's3' ? 'AWS, MinIO, Wasabi' :
                                     type.id === 'gdrive' ? 'Google Drive files' :
                                         type.id === 'postgresql' ? 'Database backup' :
-                                            type.id === 'nfs' ? 'Network share' : 'Local files'}
+                                            type.id === 'nfs' ? 'Network share' :
+                                                type.id === 'ssh' ? 'SFTP remote host' : 'Local files'}
                             </span>
                         </button>
                     );
@@ -251,6 +254,20 @@ export default function CreateBackup() {
                                         />
                                         <span>Enable</span>
                                     </label>
+                                ) : field.type === 'select' ? (
+                                    <select
+                                        className="input"
+                                        value={formData.sourceConfig[field.name] || field.default || ''}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            sourceConnectorId: '',
+                                            sourceConfig: { ...formData.sourceConfig, [field.name]: e.target.value }
+                                        })}
+                                    >
+                                        {field.options.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
                                 ) : (
                                     <input
                                         type={field.type}
@@ -298,7 +315,8 @@ export default function CreateBackup() {
                             <span className="type-description">
                                 {type.id === 's3' ? 'AWS, MinIO, Wasabi' :
                                     type.id === 'gdrive' ? 'Google Drive' :
-                                        type.id === 'nfs' ? 'Network share' : 'Local folder'}
+                                        type.id === 'nfs' ? 'Network share' :
+                                            type.id === 'ssh' ? 'SFTP remote host' : 'Local folder'}
                             </span>
                         </button>
                     );
@@ -359,6 +377,20 @@ export default function CreateBackup() {
                                         />
                                         <span>Enable</span>
                                     </label>
+                                ) : field.type === 'select' ? (
+                                    <select
+                                        className="input"
+                                        value={formData.destinationConfig[field.name] || field.default || ''}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            destinationConnectorId: '',
+                                            destinationConfig: { ...formData.destinationConfig, [field.name]: e.target.value }
+                                        })}
+                                    >
+                                        {field.options.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
                                 ) : (
                                     <input
                                         type={field.type}

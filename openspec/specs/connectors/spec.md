@@ -50,7 +50,7 @@ The system SHALL create a connector with a generated UUID, an initial
 
 #### Scenario: Valid connector creation
 
-- **GIVEN** a body with `type` in `[local, s3, gdrive, postgresql, nfs]`,
+- **GIVEN** a body with `type` in `[local, s3, gdrive, postgresql, nfs, ssh]`,
   a non-empty `name` of at most 255 characters, and an object `config`
 - **WHEN** the client sends `POST /api/connectors`
 - **THEN** the system SHALL insert the connector with a new UUID and

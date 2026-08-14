@@ -16,6 +16,7 @@ import {
     Database,
     Network,
     CloudCog,
+    Server,
     Loader2,
     X,
     Save,
@@ -33,6 +34,7 @@ const getConnectorIcon = (type) => {
         case 's3': return Cloud;
         case 'gdrive': return CloudCog;
         case 'postgresql': return Database;
+        case 'ssh': return Server;
         default: return HardDrive;
     }
 };

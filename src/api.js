@@ -190,6 +190,55 @@ export const connectorTypes = [
           { name: 'password', label: 'Password', type: 'password', required: true },
       ],
   },
+  {
+      id: 'ssh',
+      name: 'SSH Host',
+      icon: 'Server',
+      canBeSource: true,
+      canBeDestination: true,
+      fields: [
+          {
+              name: 'host',
+              label: 'Host',
+              type: 'text',
+              required: true,
+              placeholder: 'backup.example.com',
+          },
+          { name: 'port', label: 'Port', type: 'number', default: 22 },
+          {
+              name: 'username',
+              label: 'Username',
+              type: 'text',
+              required: true,
+              placeholder: 'backup',
+          },
+          {
+              name: 'authMethod',
+              label: 'Auth Method',
+              type: 'select',
+              required: true,
+              options: [
+                  { value: 'password', label: 'Password' },
+                  { value: 'privateKey', label: 'Private Key' },
+              ],
+              default: 'password',
+          },
+          { name: 'password', label: 'Password', type: 'password' },
+          {
+              name: 'privateKeyPath',
+              label: 'Private Key Path',
+              type: 'text',
+              placeholder: '/etc/arkvault/id_ed25519',
+          },
+          {
+              name: 'remotePath',
+              label: 'Remote Path',
+              type: 'text',
+              required: true,
+              placeholder: '/srv/backups',
+          },
+      ],
+  },
 ];
 
 export function formatBytes(bytes) {

@@ -9,11 +9,11 @@ A modern, self-hosted backup management application with support for multiple st
 
 <a href='https://ko-fi.com/U7U01TPY4Q' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-ArkVault simplifies your backup strategy with a unified interface for Local, NFS, S3, and Google Drive storage. Built with React 19 and Node.js, it provides automated retention, real-time status monitoring, and easy point-in-time restoration.
+ArkVault simplifies your backup strategy with a unified interface for Local, NFS, SSH, S3, and Google Drive storage. Built with React 19 and Node.js, it provides automated retention, real-time status monitoring, and easy point-in-time restoration.
 
 ## Features
 
-- 🔌 **Multiple Connectors** - Local folders, NFS, S3-compatible storage, Google Drive, PostgreSQL
+- 🔌 **Multiple Connectors** - Local folders, NFS, SSH/SFTP hosts, S3-compatible storage, Google Drive, PostgreSQL
 - 📅 **Scheduled Backups** - Cron-based scheduling with flexible options
 - 🔄 **Easy Restore** - Browse and restore from any backup point
 - 📊 **Dashboard** - Real-time overview of backup status and history
@@ -93,6 +93,7 @@ To view logs:
 |------|--------|-------------|-------------|
 | **Local** | ✅ | ✅ | Local filesystem folders |
 | **NFS** | ✅ | ✅ | Network File System mounts. **See [NFS Support](#nfs-support) for setup.** |
+| **SSH** | ✅ | ✅ | Remote hosts over SFTP (`ssh2`), password or private-key auth |
 | **S3** | ✅ | ✅ | S3-compatible storage (AWS, MinIO, etc.) |
 | **Google Drive** | ✅ | ✅ | Google Drive with OAuth |
 | **PostgreSQL** | ✅ | ❌ | Database dumps (pg_dump) |

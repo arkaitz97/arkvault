@@ -11,6 +11,7 @@ import {
     Cloud,
     CloudCog,
     Database,
+    Server,
     CheckCircle2,
     XCircle,
     Loader2
@@ -27,6 +28,7 @@ const getIcon = (type) => {
         case 's3': return Cloud;
         case 'gdrive': return CloudCog;
         case 'postgresql': return Database;
+        case 'ssh': return Server;
         default: return HardDrive;
     }
 };
@@ -191,7 +193,8 @@ export default function Connectors() {
                                         {type.id === 's3' ? 'AWS, MinIO, Wasabi, etc.' :
                                             type.id === 'gdrive' ? 'Service account auth' :
                                                 type.id === 'postgresql' ? 'pg_dump backup' :
-                                                    type.id === 'nfs' ? 'Network file share' : 'Local filesystem'}
+                                                    type.id === 'nfs' ? 'Network file share' :
+                                                        type.id === 'ssh' ? 'SFTP remote host' : 'Local filesystem'}
                                     </span>
                                 </div>
                                 <div className="type-stats">
@@ -376,6 +379,19 @@ export default function Connectors() {
                                                     />
                                                     <span>Enable</span>
                                                 </label>
+                                            ) : field.type === 'select' ? (
+                                                <select
+                                                    className="input"
+                                                    value={newConnector.config[field.name] || field.default || ''}
+                                                    onChange={(e) => setNewConnector({
+                                                        ...newConnector,
+                                                        config: { ...newConnector.config, [field.name]: e.target.value }
+                                                    })}
+                                                >
+                                                    {field.options.map(opt => (
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    ))}
+                                                </select>
                                             ) : (
                                                 <input
                                                     type={field.type}

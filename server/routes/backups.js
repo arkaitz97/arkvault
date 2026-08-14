@@ -51,9 +51,10 @@ router.get('/available', (req, res) => {
 
 router.post('/run/:jobId', validateUUID, async (req, res) => {
     const historyId = uuidv4();
+    let job;
 
     try {
-        const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.jobId);
+        job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.jobId);
         if (!job) {
             return res.status(404).json({ error: 'Job not found' });
         }

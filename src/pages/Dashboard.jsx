@@ -10,6 +10,7 @@ import {
     HardDrive,
     Cloud,
     Database,
+    Server,
     TrendingUp,
     Calendar,
     Loader2
@@ -238,6 +239,7 @@ export default function Dashboard() {
                                         {connector.type === 's3' && <Cloud size={24} />}
                                         {connector.type === 'postgresql' && <Database size={24} />}
                                         {connector.type === 'nfs' && <HardDrive size={24} />}
+                                        {connector.type === 'ssh' && <Server size={24} />}
                                         {connector.type === 'gdrive' && <Cloud size={24} />}
                                     </div>
                                     <div className="connector-info">

@@ -100,6 +100,29 @@ describe('Connectors Routes', () => {
             expect(res.body.id).toBe('new_id');
         });
 
+        it('should create ssh connector', async () => {
+            const runMock = vi.fn();
+            db.prepare.mockReturnValueOnce({ run: runMock });
+            db.prepare.mockReturnValueOnce({
+                get: vi.fn().mockReturnValue({
+                    id: 'ssh_id',
+                    type: 'ssh',
+                    config: '{"host":"backup.example.com","remotePath":"/srv/backups"}'
+                })
+            });
+
+            const res = await request(app).post('/api/connectors').send({
+                type: 'ssh',
+                name: 'remote',
+                config: { host: 'backup.example.com', remotePath: '/srv/backups' }
+            });
+
+            expect(res.status).toBe(201);
+            expect(runMock).toHaveBeenCalled();
+            expect(res.body.type).toBe('ssh');
+            expect(res.body.config.remotePath).toBe('/srv/backups');
+        });
+
         it('should handle db errors on create', async () => {
             db.prepare.mockReturnValueOnce({
                 run: vi.fn(() => { throw new Error('DB Error'); })
