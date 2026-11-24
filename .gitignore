@@ -40,3 +40,18 @@ backups/
 # Environment variables
 .env
 .env.*
+!.env.example
+
+# Local agent tooling and workflow artifacts
+.agent/
+.opencode/
+.claude/
+.cursor/
+.gemini/
+.aider*
+skills/
+openspec/
+prompts/
+AGENTS.md
+CLAUDE.md
+.github/copilot-instructions.md
