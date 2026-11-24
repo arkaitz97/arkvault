@@ -135,6 +135,16 @@ HTTP security headers via Helmet, per-route rate limiting, path validation on ev
 connector path, signed `HttpOnly` session cookies and configurable CORS. Report a
 vulnerability through [SECURITY.md](SECURITY.md).
 
+## Documentation
+
+Engineering records live in `docs/`:
+
+- [Design](docs/design.md) — scope, non-goals, the run pipeline, connector contract, scheduling, storage, restore and retention.
+- [ADR 0001: connector method contract](docs/adr/0001-connector-method-contract.md) — why every backend is one module behind five methods.
+- [ADR 0002: in-process cron scheduling](docs/adr/0002-in-process-cron-scheduling.md) — why jobs are scheduled inside the API process.
+- [ADR 0003: SQLite for state](docs/adr/0003-sqlite-for-state.md) — why one SQLite file holds all state.
+- [Security policy](SECURITY.md) — private vulnerability reporting.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, test commands and the connector
