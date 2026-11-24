@@ -1,5 +1,5 @@
 # Stage 1: Build frontend
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 # Install build tools for native modules (bcrypt, better-sqlite3)
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
@@ -9,7 +9,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Install production dependencies
-FROM node:20-alpine AS deps
+FROM node:26-alpine AS deps
 RUN apk add --no-cache python3 make g++ nfs-utils sudo
 # Configure sudo for node user to run mount/umount without password
 RUN echo "node ALL=(ALL) NOPASSWD: /bin/mount, /bin/umount, /usr/sbin/mount.nfs" >> /etc/sudoers
@@ -19,7 +19,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Stage 3: Production runner
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 
 LABEL org.opencontainers.image.title="ArkVault" \
     org.opencontainers.image.description="Secure backup management system" \
