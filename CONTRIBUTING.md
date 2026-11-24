@@ -13,8 +13,8 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/backup-app.git
-cd backup-app
+git clone https://github.com/arkaitz97/arkvault.git
+cd arkvault
 
 # Install dependencies
 npm install
@@ -30,7 +30,7 @@ This starts:
 ## Project Structure
 
 ```
-backup-app/
+arkvault/
 ├── src/                    # React frontend
 │   ├── components/         # Reusable UI components
 │   ├── pages/              # Page components
@@ -43,7 +43,7 @@ backup-app/
 │   ├── unit/               # Unit tests (Vitest)
 │   ├── integration/        # API tests (Vitest + Supertest)
 │   └── e2e/                # E2E tests (Playwright)
-└── data/                   # SQLite database (created at runtime)
+└── server/arkvault.db      # SQLite database (created at runtime)
 ```
 
 ## Running Tests
