@@ -35,8 +35,8 @@ router.get('/:id', validateUUID, (req, res) => {
 });
 
 router.post('/', validateConnectorCreation, (req, res) => {
+    const { type, name, config } = req.body;
     try {
-        const { type, name, config } = req.body;
         const id = uuidv4();
 
         db.prepare(`
@@ -116,8 +116,8 @@ router.post('/:id/test', validateUUID, async (req, res) => {
 });
 
 router.post('/test', async (req, res) => {
+    const { type, config } = req.body;
     try {
-        const { type, config } = req.body;
         const connectorInstance = getConnector(type);
         const result = await connectorInstance.testConnection(config);
         logger.info({ type }, 'Ad-hoc connector test completed');
