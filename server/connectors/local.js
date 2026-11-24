@@ -60,7 +60,7 @@ class LocalConnector {
 
         let fileStats = { fileCount: 0, totalSize: 0 };
 
-        await new Promise(async (resolve, reject) => {
+        await new Promise((resolve, reject) => {
             const output = createWriteStream(tempPath);
             const archive = isTar
                 ? archiver('tar', {
@@ -76,19 +76,12 @@ class LocalConnector {
 
             archive.pipe(output);
 
-            if (options.incremental && options.lastRun) {
-                const files = await this.getFilesToBackup(sourcePath, options.lastRun);
-                fileStats.fileCount = files.length;
-                for (const file of files) {
-                    archive.file(file.fullPath, { name: file.relativePath });
-                    fileStats.totalSize += file.size;
-                }
-            } else {
-                archive.directory(sourcePath, false);
-                fileStats = await this.getDirectoryStats(sourcePath);
-            }
-
-            archive.finalize();
+            this.addEntries(archive, sourcePath, options)
+                .then((stats) => {
+                    fileStats = stats;
+                    archive.finalize();
+                })
+                .catch(reject);
         });
 
         const archiveStats = await stat(tempPath);
@@ -108,6 +101,21 @@ class LocalConnector {
             filesProcessed: fileStats.fileCount,
             isFile: true
         };
+    }
+
+    async addEntries(archive, sourcePath, options) {
+        if (options.incremental && options.lastRun) {
+            const files = await this.getFilesToBackup(sourcePath, options.lastRun);
+            let totalSize = 0;
+            for (const file of files) {
+                archive.file(file.fullPath, { name: file.relativePath });
+                totalSize += file.size;
+            }
+            return { fileCount: files.length, totalSize };
+        }
+
+        archive.directory(sourcePath, false);
+        return this.getDirectoryStats(sourcePath);
     }
 
     async getFilesToBackup(dirPath, lastRun) {

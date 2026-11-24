@@ -23,7 +23,7 @@ test.describe('S3 Connector Workflow', () => {
         console.log('Starting MinIO container via npm script...');
         try {
             // Stop any existing instance first to avoid conflicts
-            try { execSync('npm run s3:stop', { stdio: 'ignore' }); } catch { }
+            try { execSync('npm run s3:stop', { stdio: 'ignore' }); } catch { /* ignore */ }
             execSync('npm run s3:start');
         } catch (e) {
             console.error('Failed to start MinIO:', e);

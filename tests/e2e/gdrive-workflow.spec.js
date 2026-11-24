@@ -1,5 +1,5 @@
 import { test, expect } from './coverage-fixture.js';
-import { exec, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -31,7 +31,9 @@ test.describe('Google Drive Connector Workflow', () => {
             try {
                 const response = await fetch(`http://localhost:${MOCK_SERVER_PORT}/drive/v3/about`);
                 if (response.ok) break;
-            } catch (e) { }
+            } catch {
+                // mock server not ready yet
+            }
             await new Promise(r => setTimeout(r, 1000));
             retries--;
         }

@@ -25,16 +25,16 @@ class NFSConnector {
                     // Try to list the directory to check for stale handle
                     await execAsync(`ls "${mountPoint}"`, { timeout: 2000 });
                     return mountPoint;
-                } catch (e) {
+                } catch {
                     try {
                         await execAsync(`sudo umount -f "${mountPoint}"`, { timeout: 5000 });
-                    } catch (umountErr) {
+                    } catch {
                         // Try lazy unmount if force fails
                         await execAsync(`sudo umount -l "${mountPoint}"`, { timeout: 5000 });
                     }
                 }
             }
-        } catch (e) {
+        } catch {
             // mount check failed or unmount failed, proceed to try mounting
         }
 
@@ -60,6 +60,7 @@ class NFSConnector {
             await execAsync(`sudo umount "${mountPoint}"`, { timeout: 10000 });
             await rm(mountPoint, { recursive: true, force: true });
         } catch {
+            // ignore: unmount is best effort
         }
     }
 
@@ -82,13 +83,10 @@ class NFSConnector {
         const LocalConnector = (await import('./local.js')).default;
         const localConnector = new LocalConnector();
 
-        try {
-            logger.info({ host: config.host, path: config.path }, 'Starting NFS backup');
-            const result = await localConnector.backup({ path: mountPoint }, options);
-            logger.info({ host: config.host, path: config.path, size: result.size }, 'NFS backup completed');
-            return result;
-        } finally {
-        }
+        logger.info({ host: config.host, path: config.path }, 'Starting NFS backup');
+        const result = await localConnector.backup({ path: mountPoint }, options);
+        logger.info({ host: config.host, path: config.path, size: result.size }, 'NFS backup completed');
+        return result;
     }
 
     async upload(sourcePath, filename, config) {

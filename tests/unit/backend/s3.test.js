@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import S3Connector from '../../../server/connectors/s3.js';
 import { S3Client, HeadBucketCommand, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import fs from 'fs';
 import { pipeline } from 'stream/promises';
 
 vi.mock('@aws-sdk/client-s3', () => {

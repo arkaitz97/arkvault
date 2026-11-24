@@ -3,7 +3,6 @@ import GDriveConnector from '../../../server/connectors/gdrive.js';
 import { google } from 'googleapis';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
-import archiver from 'archiver';
 
 vi.mock('googleapis', () => ({
     google: {
@@ -48,8 +47,9 @@ vi.mock('archiver', () => {
             pipe: vi.fn(),
             directory: vi.fn(),
             finalize: vi.fn(),
-            on: vi.fn((event, cb) => {
+            on: vi.fn((event, _cb) => {
                 if (event === 'close' || event === 'finish') {
+                    // no-op: the connector only needs the listener registered
                 }
             })
         }))

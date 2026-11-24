@@ -6,11 +6,14 @@ import './Layout.css';
 
 export default function Layout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [openPath, setOpenPath] = useState('/');
     const location = useLocation();
 
-    useEffect(() => {
+    // Close the mobile drawer when the route changes.
+    if (location.pathname !== openPath) {
+        setOpenPath(location.pathname);
         setSidebarOpen(false);
-    }, [location.pathname]);
+    }
 
     useEffect(() => {
         const handleEscape = (e) => {

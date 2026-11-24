@@ -87,7 +87,7 @@ test.describe('Backup Options Workflow', () => {
         await expect(incValue).toHaveText('Enabled');
 
         // Wait for API response
-        const [response] = await Promise.all([
+        const [_response] = await Promise.all([
             page.click('button:has-text("Create Backup Job")'),
             page.waitForResponse(resp => resp.url().includes('/api/jobs') && resp.status() === 200)
         ]);
@@ -132,7 +132,7 @@ test.describe('Backup Options Workflow', () => {
 
         // Sort by time
         backups.sort();
-        const secondBackup = backups[1];
+        const _secondBackup = backups[1];
 
         // We could verify size logic here. 
         // First backup has file1 + metadata.

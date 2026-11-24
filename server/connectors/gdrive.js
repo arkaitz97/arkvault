@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import logger from '../logger.js';
 import fs from 'fs';
 import path from 'path';
-import { createReadStream, createWriteStream } from 'fs';
+import { createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import archiver from 'archiver';
 import { promisify } from 'util';
@@ -52,7 +52,7 @@ class GDriveConnector {
                     get: async () => ({ data: { user: { displayName: 'Mock User' } } })
                 },
                 files: {
-                    list: async (params) => {
+                    list: async (_params) => {
                         const response = await fetch(`${process.env.GOOGLE_API_ROOT_URL}drive/v3/files`);
                         return { data: await response.json() };
                     },

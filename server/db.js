@@ -114,7 +114,7 @@ db.exec(`
 
 try {
   db.exec("ALTER TABLE available_backups ADD COLUMN checksum TEXT");
-} catch (e) {
+} catch {
   // column already exists
 }
 

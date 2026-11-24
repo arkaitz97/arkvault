@@ -1,6 +1,5 @@
 import { test as baseTest, expect } from '@playwright/test';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as crypto from 'crypto';
 
 export const test = baseTest.extend({

@@ -26,6 +26,7 @@ describe('LocalConnector', () => {
             await fs.rm(testDir, { recursive: true, force: true });
             await fs.rm(testBackupDir, { recursive: true, force: true });
         } catch {
+            // ignore: directories may already be gone
         }
     });
 
@@ -48,8 +49,6 @@ describe('LocalConnector', () => {
         });
 
         it('should expand home directory (~)', async () => {
-            const homeDir = os.homedir();
-
             const fakeHome = path.join(os.tmpdir(), `fake-home-${Date.now()}`);
             await fs.mkdir(fakeHome, { recursive: true });
 

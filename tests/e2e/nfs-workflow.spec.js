@@ -52,9 +52,9 @@ test.describe('NFS Connector Workflow', () => {
     });
 
     test.afterAll(() => {
-        try { execSync('npm run nfs:stop'); } catch { }
+        try { execSync('npm run nfs:stop'); } catch { /* ignore */ }
         if (fs.existsSync(RESTORE_DIR)) fs.rmSync(RESTORE_DIR, { recursive: true, force: true });
-        try { execSync(`docker run --rm -v /tmp:/data alpine rm -rf /data/nfs-share`, { stdio: 'ignore' }); } catch { }
+        try { execSync(`docker run --rm -v /tmp:/data alpine rm -rf /data/nfs-share`, { stdio: 'ignore' }); } catch { /* ignore */ }
     });
 
     test('should complete full lifecycle', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('NFS Connector Workflow', () => {
         await destItem.getByTitle('Test connection').click();
         try {
             await expect(destItem.locator('.connected')).toBeVisible({ timeout: 10000 });
-        } catch (e) {
+        } catch {
             // Soft fail for connection check, proceed to verify backup
         }
 
